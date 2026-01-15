@@ -10,73 +10,96 @@
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Connection -->
-        <GroupBox Header="SQL Connection" Margin="0,0,0,8">
-            <StackPanel>
-                <TextBlock Text="Connection String"/>
-                <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
-            </StackPanel>
-        </GroupBox>
+        <!-- Titel / Status -->
+        <TextBlock Text="EF Playground"
+                   FontSize="18"
+                   FontWeight="Bold" />
 
-        <!-- Main Area -->
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="1"
+                   Margin="0,8,0,8"
+                   Text="{Binding StatusText}" />
 
-            <!-- Databases -->
-            <GroupBox Header="Database" Margin="0,0,8,0">
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Connection -->
+            <GroupBox Header="SQL Connection" Margin="0,0,0,8">
                 <StackPanel>
-                    <ComboBox IsEditable="True"
-                              ItemsSource="{Binding Databases}"
-                              Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="Create" Width="70" Margin="0,0,6,0"/>
-                        <Button Content="Delete" Width="70"/>
-                    </StackPanel>
+                    <TextBlock Text="Connection String"/>
+                    <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </GroupBox>
 
-            <!-- Tables -->
-            <GroupBox Header="Table" Grid.Column="1" Margin="0,0,8,0">
-                <StackPanel>
-                    <ComboBox IsEditable="True"
-                              ItemsSource="{Binding Tables}"
-                              Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}" />
+            <!-- Main Area -->
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="Create" Width="70" Margin="0,0,6,0"/>
-                        <Button Content="Delete" Width="70"/>
+                <!-- Databases -->
+                <GroupBox Header="Database" Margin="0,0,8,0">
+                    <StackPanel>
+                        <ComboBox IsEditable="True"
+                                  ItemsSource="{Binding Databases}"
+                                  Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Load" Width="70" Margin="0,0,6,0"
+                                Command="{Binding LoadDatabasesCommand}" />
+                            <Button Content="Create" Width="70" Margin="0,0,6,0"
+                                Command="{Binding CreateDatabaseCommand}" />
+                            <Button Content="Delete" Width="70"
+                                Command="{Binding DeleteDatabaseCommand}" />
+                        </StackPanel>
+
                     </StackPanel>
-                </StackPanel>
-            </GroupBox>
+                </GroupBox>
 
-            <!-- Columns -->
-            <GroupBox Header="Column" Grid.Column="2">
-                <StackPanel>
-                    <ComboBox IsEditable="True"
-                              ItemsSource="{Binding Columns}"
-                              Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}" />
+                <!-- Tables -->
+                <GroupBox Header="Table" Grid.Column="1" Margin="0,0,8,0">
+                    <StackPanel>
+                        <ComboBox IsEditable="True"
+                                  ItemsSource="{Binding Tables}"
+                                  Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <ComboBox ItemsSource="{Binding DataTypes}"
-                              SelectedItem="{Binding SelectedDataType}"
-                              Margin="0,6,0,0"/>
-
-                    <TextBox Margin="0,6,0,0"
-                             Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}" />
-
-                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <Button Content="Create" Width="70" Margin="0,0,6,0"/>
-                        <Button Content="Delete" Width="70"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Create" Width="70" Margin="0,0,6,0"/>
+                            <Button Content="Delete" Width="70"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </GroupBox>
+                </GroupBox>
+
+                <!-- Columns -->
+                <GroupBox Header="Column" Grid.Column="2">
+                    <StackPanel>
+                        <ComboBox IsEditable="True"
+                                  ItemsSource="{Binding Columns}"
+                                  Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <ComboBox ItemsSource="{Binding DataTypes}"
+                                  SelectedItem="{Binding SelectedDataType}"
+                                  Margin="0,6,0,0"/>
+
+                        <TextBox Margin="0,6,0,0"
+                                 Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="Create" Width="70" Margin="0,0,6,0"/>
+                            <Button Content="Delete" Width="70"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

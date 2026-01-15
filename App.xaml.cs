@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using EfPlayground.Services;
 
 namespace EfPlayground
 {
@@ -29,6 +30,7 @@ namespace EfPlayground
         {
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
+            services.AddSingleton<SqlServerAdminService>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)

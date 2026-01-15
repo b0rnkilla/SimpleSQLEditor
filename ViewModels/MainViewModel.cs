@@ -1,14 +1,27 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using EfPlayground.Services;
 using System.Collections.ObjectModel;
 
 namespace EfPlayground.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {
+        #region Fields
+
+        private readonly SqlServerAdminService _sqlAdminService;
+
+        #endregion
+
         #region Properties
 
         [ObservableProperty]
-        private string _connectionString;
+        private string _statusText = "Ready";
+
+        [ObservableProperty]
+        private string _connectionString =
+            //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
+            "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
 
         [ObservableProperty]
         private string _selectedDatabase;
@@ -36,6 +49,80 @@ namespace EfPlayground.ViewModels
             "datetime",
             "bit"
         };
+
+        #endregion
+
+        #region Constructor
+
+        public MainViewModel(SqlServerAdminService sqlAdminService)
+        {
+            _sqlAdminService = sqlAdminService;
+        }
+
+        #endregion
+
+        #region Methods & Events
+
+        [RelayCommand]
+        private async Task LoadDatabasesAsync()
+        {
+            try
+            {
+                StatusText = "Loading databases...";
+
+                var databases = await _sqlAdminService.GetDatabasesAsync(ConnectionString);
+
+                Databases.Clear();
+                foreach (var db in databases)
+                {
+                    Databases.Add(db);
+                }
+
+                StatusText = $"Loaded {Databases.Count} databases.";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task CreateDatabaseAsync()
+        {
+            try
+            {
+                StatusText = "Creating database...";
+
+                await _sqlAdminService.CreateDatabaseAsync(ConnectionString, SelectedDatabase);
+
+                StatusText = $"Database created: {SelectedDatabase}";
+                await LoadDatabasesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteDatabaseAsync()
+        {
+            try
+            {
+                StatusText = "Deleting database...";
+
+                await _sqlAdminService.DeleteDatabaseAsync(ConnectionString, SelectedDatabase);
+
+                StatusText = $"Database deleted: {SelectedDatabase}";
+                SelectedDatabase = string.Empty;
+
+                await LoadDatabasesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
 
         #endregion
     }
