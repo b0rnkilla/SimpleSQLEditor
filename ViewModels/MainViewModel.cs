@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 
 namespace EfPlayground.ViewModels
 {
@@ -7,15 +8,34 @@ namespace EfPlayground.ViewModels
         #region Properties
 
         [ObservableProperty]
-        private string _statusText = "Ready";
+        private string _connectionString;
 
-        #endregion
+        [ObservableProperty]
+        private string _selectedDatabase;
 
-        #region Constructor
+        [ObservableProperty]
+        private string _selectedTable;
 
-        public MainViewModel()
+        [ObservableProperty]
+        private string _selectedColumn;
+
+        [ObservableProperty]
+        private string _selectedDataType;
+
+        [ObservableProperty]
+        private string _columnValue;
+
+        public ObservableCollection<string> Databases { get; } = new();
+        public ObservableCollection<string> Tables { get; } = new();
+        public ObservableCollection<string> Columns { get; } = new();
+        public ObservableCollection<string> DataTypes { get; } = new()
         {
-        }
+            "int",
+            "nvarchar(50)",
+            "nvarchar(100)",
+            "datetime",
+            "bit"
+        };
 
         #endregion
     }
