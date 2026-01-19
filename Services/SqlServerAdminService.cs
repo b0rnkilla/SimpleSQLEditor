@@ -49,7 +49,6 @@ ORDER BY [name];";
 
             var masterConnectionString = BuildMasterConnectionString(connectionString);
 
-            // NEU: Force single user, rollback open transactions, then drop
             var sql = $@"
 IF DB_ID(N'{databaseName}') IS NOT NULL
 BEGIN
@@ -58,6 +57,79 @@ BEGIN
 END";
 
             await ExecuteNonQueryAsync(masterConnectionString, sql);
+        }
+
+        public async Task<IReadOnlyList<string>> GetTablesAsync(string connectionString, string databaseName)
+        {
+            EnsureSafeIdentifier(databaseName);
+
+            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+
+            const string sql = @"
+SELECT [name]
+FROM sys.tables
+ORDER BY [name];";
+
+            var result = new List<string>();
+
+            await using var connection = new SqlConnection(databaseConnectionString);
+            await connection.OpenAsync();
+
+            await using var command = new SqlCommand(sql, connection);
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(reader.GetString(0));
+            }
+
+            return result;
+        }
+
+        public async Task CreateTableAsync(string connectionString, string databaseName, string tableName)
+        {
+            EnsureSafeIdentifier(databaseName);
+            EnsureSafeIdentifier(tableName);
+
+            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+
+            var sql = $@"
+IF OBJECT_ID(N'dbo.[{tableName}]', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.[{tableName}]
+    (
+        [Id] INT IDENTITY(1,1) NOT NULL CONSTRAINT [PK_{tableName}] PRIMARY KEY
+    );
+END";
+
+            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+        }
+
+        public async Task DeleteTableAsync(string connectionString, string databaseName, string tableName)
+        {
+            EnsureSafeIdentifier(databaseName);
+            EnsureSafeIdentifier(tableName);
+
+            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+
+            var sql = $@"
+IF OBJECT_ID(N'dbo.[{tableName}]', N'U') IS NOT NULL
+BEGIN
+    DROP TABLE dbo.[{tableName}];
+END";
+
+            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+        }
+
+        private static string BuildDatabaseConnectionString(string connectionString, string databaseName)
+        {
+            var builder = new SqlConnectionStringBuilder(connectionString)
+            {
+                InitialCatalog = databaseName,
+                AttachDBFilename = string.Empty
+            };
+
+            return builder.ConnectionString;
         }
 
         private static async Task ExecuteNonQueryAsync(string connectionString, string sql)
@@ -73,7 +145,6 @@ END";
         {
             var builder = new SqlConnectionStringBuilder(connectionString);
 
-            // NEU: Für Admin-Operationen immer auf master gehen
             builder.InitialCatalog = "master";
             builder.AttachDBFilename = string.Empty;
 
@@ -85,8 +156,6 @@ END";
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Name must not be empty.", nameof(name));
 
-            // NEU: Nur Buchstaben, Zahlen, Unterstrich. Kein Leerzeichen, kein Minus etc.
-            // Für den Anfang bewusst restriktiv, um DDL-Injection zu vermeiden.
             if (!Regex.IsMatch(name, "^[A-Za-z0-9_]+$"))
                 throw new ArgumentException("Only letters, digits and underscore are allowed.", nameof(name));
         }

@@ -124,6 +124,95 @@ namespace EfPlayground.ViewModels
             }
         }
 
+        [RelayCommand]
+        private async Task LoadTablesAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase))
+            {
+                StatusText = "No database selected.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Loading tables...";
+
+                var tables = await _sqlAdminService.GetTablesAsync(
+                    ConnectionString,
+                    SelectedDatabase);
+
+                Tables.Clear();
+                foreach (var table in tables)
+                {
+                    Tables.Add(table);
+                }
+
+                StatusText = $"Loaded {Tables.Count} tables.";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task CreateTableAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
+                string.IsNullOrWhiteSpace(SelectedTable))
+            {
+                StatusText = "Database or table name missing.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Creating table...";
+
+                await _sqlAdminService.CreateTableAsync(
+                    ConnectionString,
+                    SelectedDatabase,
+                    SelectedTable);
+
+                StatusText = $"Table created: {SelectedTable}";
+                await LoadTablesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteTableAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
+                string.IsNullOrWhiteSpace(SelectedTable))
+            {
+                StatusText = "Database or table name missing.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Deleting table...";
+
+                await _sqlAdminService.DeleteTableAsync(
+                    ConnectionString,
+                    SelectedDatabase,
+                    SelectedTable);
+
+                StatusText = $"Table deleted: {SelectedTable}";
+                SelectedTable = string.Empty;
+
+                await LoadTablesAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
         #endregion
     }
 }
