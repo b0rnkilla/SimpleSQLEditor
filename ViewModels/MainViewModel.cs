@@ -14,6 +14,8 @@ namespace EfPlayground.ViewModels
 
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
+        private bool _isAutoLoading;
+
         #endregion
 
         #region Properties
@@ -308,6 +310,68 @@ namespace EfPlayground.ViewModels
         #endregion
 
         #region Methods & Events
+
+        partial void OnSelectedDatabaseChanged(string value)
+        {
+            if (_isAutoLoading)
+                return;
+
+            _ = HandleSelectedDatabaseChangedAsync(value);
+        }
+
+        private async Task HandleSelectedDatabaseChangedAsync(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            try
+            {
+                _isAutoLoading = true;
+
+                SelectedTable = string.Empty;
+                SelectedColumn = string.Empty;
+                SelectedDataType = string.Empty;
+
+                Tables.Clear();
+                Columns.Clear();
+
+                await LoadTablesAsync();
+            }
+            finally
+            {
+                _isAutoLoading = false;
+            }
+        }
+
+        partial void OnSelectedTableChanged(string value)
+        {
+            if (_isAutoLoading)
+                return;
+
+            _ = HandleSelectedTableChangedAsync(value);
+        }
+
+        private async Task HandleSelectedTableChangedAsync(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(SelectedDatabase))
+                return;
+
+            try
+            {
+                _isAutoLoading = true;
+
+                SelectedColumn = string.Empty;
+                SelectedDataType = string.Empty;
+
+                Columns.Clear();
+
+                await LoadColumnsAsync();
+            }
+            finally
+            {
+                _isAutoLoading = false;
+            }
+        }
 
         partial void OnSelectedColumnChanged(string value)
         {
