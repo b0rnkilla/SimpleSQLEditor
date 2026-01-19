@@ -5,28 +5,74 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EfPlayground"
         mc:Ignorable="d"
-        Title="EF Playground" Height="350" Width="950"
+        Title="EF Playground" Height="370" Width="950"
         ResizeMode="NoResize">
 
-    <Grid Margin="12">
+    <Grid Margin="12,5,12,12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        
+        <!--#region Status-->
+        <GroupBox Margin="0,0,0,8">
+            <GroupBox.Header>
+                <TextBlock Text="Status:"
+                           FontWeight="Bold"
+                           Margin="1,5,1,2" />
+            </GroupBox.Header>
 
-        <!-- Status -->
-        <GroupBox Header="Status" Margin="0,0,0,8">
-            <TextBox Text="{Binding StatusText}" />
+            <TextBox Text="{Binding StatusText}"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     MinHeight="50"
+                     Margin="3">
+
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Setter Property="FontWeight" Value="Normal"/>
+                        <Setter Property="Foreground" Value="Black"/>
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding StatusLevel}" Value="Warning">
+                                <Setter Property="Foreground" Value="Goldenrod"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding StatusLevel}" Value="Success">
+                                <Setter Property="Foreground" Value="Green"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding StatusLevel}" Value="Error">
+                                <Setter Property="Foreground" Value="Red"/>
+                                <Setter Property="FontWeight" Value="Normal"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
         </GroupBox>
-
+        <!--#endregion-->
+        
+        <!--#region SQL Connection & DB -->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Connection -->
-            <GroupBox Header="SQL Connection" Margin="0,0,0,8">
+            <!--#region Connection -->
+            <GroupBox Grid.Row="0"
+                      Margin="0,0,0,8">
+                <GroupBox.Header>
+                    <TextBlock Text="SQL Connection:"
+                               FontWeight="Bold"
+                               Margin="1,5,1,2" />
+                </GroupBox.Header>
+                
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -51,8 +97,9 @@
                     </Grid>
                 </Grid>
             </GroupBox>
+            <!--#endregion-->
 
-            <!-- Main Area -->
+            <!--#region DB / Tables / Columns -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -60,12 +107,19 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Databases -->
-                <GroupBox Header="Database" Margin="0,0,8,0">
+                <!--region Databases -->
+                <GroupBox Margin="0,0,8,0">
+                    <GroupBox.Header>
+                        <TextBlock Text="Database:"
+                                   FontWeight="Bold"
+                                   Margin="1,0,1,2" />
+                    </GroupBox.Header>
+
                     <StackPanel>
                         <ComboBox IsEditable="True"
                                   ItemsSource="{Binding Databases}"
-                                  Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}" />
+                                  Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="3" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
                             <Button Width="90" Margin="0,0,6,0"
@@ -83,13 +137,21 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
+                <!--#endregion-->
 
-                <!-- Tables -->
-                <GroupBox Header="Table" Grid.Column="1" Margin="0,0,8,0">
+                <!--#region Tables -->
+                <GroupBox Grid.Column="1" Margin="0,0,8,0">
+                    <GroupBox.Header>
+                        <TextBlock Text="Table:"
+                                   FontWeight="Bold"
+                                   Margin="1,0,1,2" />
+                    </GroupBox.Header>
+
                     <StackPanel>
                         <ComboBox IsEditable="True"
                                   ItemsSource="{Binding Tables}"
-                                  Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}" />
+                                  Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="3" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
                             <Button Width="90" Margin="0,0,6,0"
@@ -107,20 +169,28 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
+                <!--#endregion-->
 
-                <!-- Columns -->
-                <GroupBox Header="Column" Grid.Column="2">
+                <!--#region Columns -->
+                <GroupBox Grid.Column="2">
+                    <GroupBox.Header>
+                        <TextBlock Text="Column:"
+                                   FontWeight="Bold"
+                                   Margin="1,0,1,2" />
+                    </GroupBox.Header>
+
                     <StackPanel>
                         <ComboBox IsEditable="True"
                                   ItemsSource="{Binding Columns}"
-                                  Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}" />
+                                  Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="3" />
 
                         <ComboBox ItemsSource="{Binding DataTypes}"
                                   SelectedItem="{Binding SelectedDataType}"
-                                  Margin="0,6,0,0"/>
+                                  Margin="3"/>
 
-                        <TextBox Margin="0,6,0,0"
-                                 Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="3" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
                             <Button Width="90" Margin="0,0,6,0"
@@ -138,7 +208,13 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
+                <!--#endregion-->
+                
             </Grid>
+            <!--#endregion-->
+            
         </Grid>
+        <!--#endregion-->
+        
     </Grid>
 </Window>

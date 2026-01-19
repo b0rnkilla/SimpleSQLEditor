@@ -27,6 +27,9 @@ namespace EfPlayground.ViewModels
         private string _statusText;
 
         [ObservableProperty]
+        private StatusLevel _statusLevel = StatusLevel.Info;
+
+        [ObservableProperty]
         private string _connectionString =
             //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
             "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
@@ -69,19 +72,19 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                StatusText = "Connecting...";
+                SetStatus(StatusLevel.Warning, "Connecting...");
 
                 await _sqlAdminService.TestConnectionAsync(ConnectionString);
 
                 IsConnected = true;
-                StatusText = "Ready";
+                SetStatus(StatusLevel.Success, "Ready");
 
                 await LoadDatabasesAsync();
             }
             catch (Exception ex)
             {
                 IsConnected = false;
-                StatusText = $"Error: {ex.Message}";
+                SetStatus(StatusLevel.Error, $"Error: {ex.Message}");
             }
         }
 
@@ -90,7 +93,7 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                StatusText = "Loading databases...";
+                SetStatus(StatusLevel.Warning, "Loading databases...");
 
                 var databases = await _sqlAdminService.GetDatabasesAsync(ConnectionString);
 
@@ -100,11 +103,11 @@ namespace EfPlayground.ViewModels
                     Databases.Add(db);
                 }
 
-                StatusText = $"Loaded {Databases.Count} databases.";
+                SetStatus(StatusLevel.Success, $"Loaded {Databases.Count} databases.");
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                SetStatus(StatusLevel.Error, $"Error: {ex.Message}");
             }
         }
 
@@ -334,6 +337,12 @@ namespace EfPlayground.ViewModels
         #endregion
 
         #region Methods & Events
+
+        private void SetStatus(StatusLevel level, string message)
+        {
+            StatusLevel = level;
+            StatusText = message;
+        }
 
         partial void OnSelectedDatabaseChanged(string value)
         {
