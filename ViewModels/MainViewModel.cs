@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using EfPlayground.Services;
 using EfPlayground.Infrastructure;
+using EfPlayground.Services;
+using EfPlayground.Views;
 using System.Collections.ObjectModel;
 
 namespace EfPlayground.ViewModels
@@ -11,6 +12,8 @@ namespace EfPlayground.ViewModels
         #region Fields
 
         private readonly SqlServerAdminService _sqlAdminService;
+
+        private readonly IWindowService _windowService;
 
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -62,14 +65,21 @@ namespace EfPlayground.ViewModels
 
         #region Constructor
 
-        public MainViewModel(SqlServerAdminService sqlAdminService)
+        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService)
         {
             _sqlAdminService = sqlAdminService;
+            _windowService = windowService;
         }
 
         #endregion
 
         #region Commands
+
+        [RelayCommand]
+        private void OpenStatusLog()
+        {
+            _windowService.ShowStatusLog();
+        }
 
         [RelayCommand]
         private async Task ConnectAsync()

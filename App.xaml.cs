@@ -31,6 +31,8 @@ namespace EfPlayground
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
             services.AddSingleton<SqlServerAdminService>();
+            services.AddSingleton<Views.StatusLogWindow>();
+            services.AddSingleton<IWindowService, WindowService>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)
