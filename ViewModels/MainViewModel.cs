@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EfPlayground.Services;
+using EfPlayground.Infrastructure;
 using System.Collections.ObjectModel;
 
 namespace EfPlayground.ViewModels
@@ -10,6 +11,8 @@ namespace EfPlayground.ViewModels
         #region Fields
 
         private readonly SqlServerAdminService _sqlAdminService;
+
+        private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
         #endregion
 
@@ -41,14 +44,7 @@ namespace EfPlayground.ViewModels
         public ObservableCollection<string> Databases { get; } = new();
         public ObservableCollection<string> Tables { get; } = new();
         public ObservableCollection<string> Columns { get; } = new();
-        public ObservableCollection<string> DataTypes { get; } = new()
-        {
-            "int",
-            "nvarchar(50)",
-            "nvarchar(100)",
-            "datetime",
-            "bit"
-        };
+        public ObservableCollection<string> DataTypes { get; } = new(SqlDataTypes.Allowed);
 
         #endregion
 
@@ -61,7 +57,7 @@ namespace EfPlayground.ViewModels
 
         #endregion
 
-        #region Methods & Events
+        #region Commands
 
         [RelayCommand]
         private async Task LoadDatabasesAsync()
@@ -210,6 +206,117 @@ namespace EfPlayground.ViewModels
             catch (Exception ex)
             {
                 StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task LoadColumnsAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
+            {
+                StatusText = "No database or table selected.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Loading columns...";
+
+                var map = await _sqlAdminService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
+
+                _columnDataTypes.Clear();
+                foreach (var kvp in map)
+                {
+                    _columnDataTypes[kvp.Key] = kvp.Value;
+                }
+
+                Columns.Clear();
+                foreach (var columnName in _columnDataTypes.Keys)
+                {
+                    Columns.Add(columnName);
+                }
+
+                // NEU: Wenn bereits eine Column gewählt ist, Datentyp synchronisieren
+                if (!string.IsNullOrWhiteSpace(SelectedColumn) && _columnDataTypes.TryGetValue(SelectedColumn, out var dataType))
+                {
+                    SelectedDataType = dataType;
+                }
+
+                StatusText = $"Loaded {Columns.Count} columns.";
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task CreateColumnAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
+                string.IsNullOrWhiteSpace(SelectedTable) ||
+                string.IsNullOrWhiteSpace(SelectedColumn) ||
+                string.IsNullOrWhiteSpace(SelectedDataType))
+            {
+                StatusText = "Database, table, column or data type missing.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Creating column...";
+
+                await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn, SelectedDataType);
+
+                StatusText = $"Column created: {SelectedColumn}";
+                await LoadColumnsAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteColumnAsync()
+        {
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
+                string.IsNullOrWhiteSpace(SelectedTable) ||
+                string.IsNullOrWhiteSpace(SelectedColumn))
+            {
+                StatusText = "Database, table or column name missing.";
+                return;
+            }
+
+            try
+            {
+                StatusText = "Deleting column...";
+
+                await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn);
+
+                StatusText = $"Column deleted: {SelectedColumn}";
+                SelectedColumn = string.Empty;
+
+                await LoadColumnsAsync();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
+
+        #endregion
+
+        #region Methods & Events
+
+        partial void OnSelectedColumnChanged(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            if (_columnDataTypes.TryGetValue(value, out var dataType))
+            {
+                SelectedDataType = dataType;
             }
         }
 
