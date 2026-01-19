@@ -31,7 +31,7 @@ namespace EfPlayground
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
             services.AddSingleton<SqlServerAdminService>();
-            services.AddSingleton<Views.StatusLogWindow>();
+            services.AddTransient<Views.StatusLogWindow>();
             services.AddSingleton<IWindowService, WindowService>();
         }
 

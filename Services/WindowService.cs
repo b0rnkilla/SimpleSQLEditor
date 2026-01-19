@@ -24,9 +24,21 @@ namespace EfPlayground.Services
 
         #region Methods & Events
 
+        public event EventHandler<bool>? IsStatusLogOpenChanged;
+
         public void ShowStatusLog()
         {
-            _statusLogWindow ??= _serviceProvider.GetRequiredService<StatusLogWindow>();
+            if (_statusLogWindow == null)
+            {
+                _statusLogWindow = _serviceProvider.GetRequiredService<StatusLogWindow>();
+                _statusLogWindow.Closed += (_, _) =>
+                {
+                    _statusLogWindow = null;
+                    IsStatusLogOpenChanged?.Invoke(this, false);
+                };
+
+                IsStatusLogOpenChanged?.Invoke(this, true);
+            }
 
             var mainViewModel = _serviceProvider.GetRequiredService<MainViewModel>();
             _statusLogWindow.DataContext = mainViewModel;

@@ -37,6 +37,9 @@ namespace EfPlayground.ViewModels
         public ObservableCollection<StatusEntry> StatusHistory { get; } = new();
 
         [ObservableProperty]
+        private bool _isStatusLogOpen;
+
+        [ObservableProperty]
         private string _connectionString =
             //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
             "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
@@ -68,7 +71,10 @@ namespace EfPlayground.ViewModels
         public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService)
         {
             _sqlAdminService = sqlAdminService;
+
             _windowService = windowService;
+
+            _windowService.IsStatusLogOpenChanged += (_, isOpen) => IsStatusLogOpen = isOpen;
         }
 
         #endregion
