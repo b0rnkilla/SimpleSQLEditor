@@ -21,7 +21,10 @@ namespace EfPlayground.ViewModels
         #region Properties
 
         [ObservableProperty]
-        private string _statusText = "Ready";
+        private bool _isConnected;
+
+        [ObservableProperty]
+        private string _statusText;
 
         [ObservableProperty]
         private string _connectionString =
@@ -60,6 +63,27 @@ namespace EfPlayground.ViewModels
         #endregion
 
         #region Commands
+
+        [RelayCommand]
+        private async Task ConnectAsync()
+        {
+            try
+            {
+                StatusText = "Connecting...";
+
+                await _sqlAdminService.TestConnectionAsync(ConnectionString);
+
+                IsConnected = true;
+                StatusText = "Ready";
+
+                await LoadDatabasesAsync();
+            }
+            catch (Exception ex)
+            {
+                IsConnected = false;
+                StatusText = $"Error: {ex.Message}";
+            }
+        }
 
         [RelayCommand]
         private async Task LoadDatabasesAsync()

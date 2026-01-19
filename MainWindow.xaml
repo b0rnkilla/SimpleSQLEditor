@@ -5,20 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:EfPlayground"
         mc:Ignorable="d"
-        Title="EF Playground" Height="450" Width="800">
+        Title="EF Playground" Height="350" Width="950"
+        ResizeMode="NoResize">
 
-    <Grid Margin="8">
+    <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Status -->
-        <TextBlock Grid.Row="0" Margin="0,8,0,8">
-            <Run Text="Status: " FontWeight="Bold" />
-            <Run Text="{Binding StatusText}" />
-        </TextBlock>
-
+        <GroupBox Header="Status" Margin="0,0,0,8">
+            <TextBox Text="{Binding StatusText}" />
+        </GroupBox>
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -28,10 +27,29 @@
 
             <!-- Connection -->
             <GroupBox Header="SQL Connection" Margin="0,0,0,8">
-                <StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
                     <TextBlock Text="Connection String"/>
-                    <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Button Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Width="110"
+                                Content="⏵ Connect"
+                                Command="{Binding ConnectCommand}" />
+                    </Grid>
+                </Grid>
             </GroupBox>
 
             <!-- Main Area -->
@@ -49,15 +67,20 @@
                                   ItemsSource="{Binding Databases}"
                                   Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <Button Content="Load" Width="70" Margin="0,0,6,0"
-                                Command="{Binding LoadDatabasesCommand}" />
-                            <Button Content="Create" Width="70" Margin="0,0,6,0"
-                                Command="{Binding CreateDatabaseCommand}" />
-                            <Button Content="Delete" Width="70"
-                                Command="{Binding DeleteDatabaseCommand}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="↻ Refresh"
+                                    Command="{Binding LoadDatabasesCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="+ Create"
+                                    Command="{Binding CreateDatabaseCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90"
+                                    Content="− Delete"
+                                    Command="{Binding DeleteDatabaseCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
                         </StackPanel>
-
                     </StackPanel>
                 </GroupBox>
 
@@ -68,15 +91,20 @@
                                   ItemsSource="{Binding Tables}"
                                   Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <Button Content="Load" Width="70" Margin="0,0,6,0"
-                                Command="{Binding LoadTablesCommand}" />
-                            <Button Content="Create" Width="70" Margin="0,0,6,0"
-                                Command="{Binding CreateTableCommand}" />
-                            <Button Content="Delete" Width="70"
-                                Command="{Binding DeleteTableCommand}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="↻ Refresh"
+                                    Command="{Binding LoadTablesCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="+ Create"
+                                    Command="{Binding CreateTableCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90"
+                                    Content="− Delete"
+                                    Command="{Binding DeleteTableCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
                         </StackPanel>
-
                     </StackPanel>
                 </GroupBox>
 
@@ -94,15 +122,20 @@
                         <TextBox Margin="0,6,0,0"
                                  Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                            <Button Content="Load" Width="70" Margin="0,0,6,0"
-                                Command="{Binding LoadColumnsCommand}" />
-                            <Button Content="Create" Width="70" Margin="0,0,6,0"
-                                Command="{Binding CreateColumnCommand}" />
-                            <Button Content="Delete" Width="70"
-                                Command="{Binding DeleteColumnCommand}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="↻ Refresh"
+                                    Command="{Binding LoadColumnsCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90" Margin="0,0,6,0"
+                                    Content="+ Create"
+                                    Command="{Binding CreateColumnCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
+                            <Button Width="90"
+                                    Content="− Delete"
+                                    Command="{Binding DeleteColumnCommand}"
+                                    IsEnabled="{Binding IsConnected}" />
                         </StackPanel>
-
                     </StackPanel>
                 </GroupBox>
             </Grid>

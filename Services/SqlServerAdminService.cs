@@ -8,6 +8,14 @@ namespace EfPlayground.Services
     {
         #region Methods
 
+        public async Task TestConnectionAsync(string connectionString)
+        {
+            var masterConnectionString = BuildMasterConnectionString(connectionString);
+
+            await using var connection = new SqlConnection(masterConnectionString);
+            await connection.OpenAsync();
+        }
+
         public async Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
         {
             var masterConnectionString = BuildMasterConnectionString(connectionString);
