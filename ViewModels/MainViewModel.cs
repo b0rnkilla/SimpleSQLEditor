@@ -16,6 +16,8 @@ namespace EfPlayground.ViewModels
 
         private bool _isAutoLoading;
 
+        private const int StatusStepDelayMs = 1000;
+
         #endregion
 
         #region Properties
@@ -28,6 +30,8 @@ namespace EfPlayground.ViewModels
 
         [ObservableProperty]
         private StatusLevel _statusLevel = StatusLevel.Info;
+
+        public ObservableCollection<StatusEntry> StatusHistory { get; } = new();
 
         [ObservableProperty]
         private string _connectionString =
@@ -72,19 +76,19 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                SetStatus(StatusLevel.Warning, "Connecting...");
+                await SetStatusAsync(StatusLevel.Warning, "Connecting...");
 
                 await _sqlAdminService.TestConnectionAsync(ConnectionString);
 
                 IsConnected = true;
-                SetStatus(StatusLevel.Success, "Ready");
+                await SetStatusAsync(StatusLevel.Success, "Ready");
 
                 await LoadDatabasesAsync();
             }
             catch (Exception ex)
             {
                 IsConnected = false;
-                SetStatus(StatusLevel.Error, $"Error: {ex.Message}");
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -93,7 +97,7 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                SetStatus(StatusLevel.Warning, "Loading databases...");
+                await SetStatusAsync(StatusLevel.Warning, "Loading databases...");
 
                 var databases = await _sqlAdminService.GetDatabasesAsync(ConnectionString);
 
@@ -103,11 +107,11 @@ namespace EfPlayground.ViewModels
                     Databases.Add(db);
                 }
 
-                SetStatus(StatusLevel.Success, $"Loaded {Databases.Count} databases.");
+                await SetStatusAsync(StatusLevel.Success, $"Loaded {Databases.Count} databases.");
             }
             catch (Exception ex)
             {
-                SetStatus(StatusLevel.Error, $"Error: {ex.Message}");
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -338,10 +342,22 @@ namespace EfPlayground.ViewModels
 
         #region Methods & Events
 
-        private void SetStatus(StatusLevel level, string message)
+        private async Task SetStatusAsync(StatusLevel level, string message, bool withDelay = true)
         {
             StatusLevel = level;
             StatusText = message;
+
+            StatusHistory.Add(new StatusEntry
+            {
+                Timestamp = DateTime.Now,
+                Level = level,
+                Message = message
+            });
+
+            if (withDelay)
+            {
+                await Task.Delay(StatusStepDelayMs);
+            }
         }
 
         partial void OnSelectedDatabaseChanged(string value)
