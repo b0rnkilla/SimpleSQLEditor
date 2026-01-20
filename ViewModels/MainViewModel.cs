@@ -52,13 +52,9 @@ namespace SimpleSQLEditor.ViewModels
         [ObservableProperty]
         private string _selectedColumn;
 
-        [ObservableProperty]
-        private string _selectedDataType;
-
         public ObservableCollection<string> Databases { get; } = new();
         public ObservableCollection<string> Tables { get; } = new();
         public ObservableCollection<string> Columns { get; } = new();
-        public ObservableCollection<string> DataTypes { get; } = new(SqlDataTypes.Allowed);
 
         #endregion
 
@@ -287,14 +283,9 @@ namespace SimpleSQLEditor.ViewModels
                 }
 
                 Columns.Clear();
-                foreach (var columnName in _columnDataTypes.Keys)
+                foreach (var kvp in _columnDataTypes)
                 {
-                    Columns.Add(columnName);
-                }
-
-                if (!string.IsNullOrWhiteSpace(SelectedColumn) && _columnDataTypes.TryGetValue(SelectedColumn, out var dataType))
-                {
-                    SelectedDataType = dataType;
+                    Columns.Add($"{kvp.Key} ({kvp.Value})");
                 }
 
                 await SetStatusAsync(StatusLevel.Info, $"Loaded {Columns.Count} columns.");
@@ -310,11 +301,17 @@ namespace SimpleSQLEditor.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
                 string.IsNullOrWhiteSpace(SelectedTable) ||
-                string.IsNullOrWhiteSpace(SelectedColumn) ||
-                string.IsNullOrWhiteSpace(SelectedDataType))
+                string.IsNullOrWhiteSpace(SelectedColumn))
             {
-                await SetStatusAsync(StatusLevel.Error, "Database, table, column or data type missing.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Error, "Database, table or column definition missing.", withDelay: false);
+                return;
+            }
 
+            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out var dataType) ||
+                string.IsNullOrWhiteSpace(columnName) ||
+                string.IsNullOrWhiteSpace(dataType))
+            {
+                await SetStatusAsync(StatusLevel.Error, "Column must be in format: ColumnName (DataType)", withDelay: false);
                 return;
             }
 
@@ -322,9 +319,9 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Creating column...");
 
-                await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn, SelectedDataType);
+                await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName, dataType);
 
-                await SetStatusAsync(StatusLevel.Info, $"Column created: {SelectedColumn}");
+                await SetStatusAsync(StatusLevel.Info, $"Column created: {columnName}");
 
                 await LoadColumnsAsync();
             }
@@ -342,7 +339,12 @@ namespace SimpleSQLEditor.ViewModels
                 string.IsNullOrWhiteSpace(SelectedColumn))
             {
                 await SetStatusAsync(StatusLevel.Error, "Database, table or column name missing.", withDelay: false);
+                return;
+            }
 
+            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out _) || string.IsNullOrWhiteSpace(columnName))
+            {
+                await SetStatusAsync(StatusLevel.Error, "Invalid column selection.", withDelay: false);
                 return;
             }
 
@@ -350,9 +352,9 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Deleting column...");
 
-                await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn);
+                await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName);
 
-                await SetStatusAsync(StatusLevel.Info, $"Column deleted: {SelectedColumn}");
+                await SetStatusAsync(StatusLevel.Info, $"Column deleted: {columnName}");
 
                 SelectedColumn = string.Empty;
 
@@ -386,6 +388,31 @@ namespace SimpleSQLEditor.ViewModels
             }
         }
 
+        private static bool TryParseColumnDisplay(string input, out string columnName, out string? dataType)
+        {
+            columnName = string.Empty;
+            dataType = null;
+
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            input = input.Trim();
+
+            var openIndex = input.LastIndexOf('(');
+            var closeIndex = input.LastIndexOf(')');
+
+            if (openIndex > 0 && closeIndex > openIndex)
+            {
+                columnName = input[..openIndex].Trim();
+                dataType = input[(openIndex + 1)..closeIndex].Trim();
+                return !string.IsNullOrWhiteSpace(columnName);
+            }
+
+            // Fallback: Nutzer gibt nur "ColumnName" ein
+            columnName = input;
+            return true;
+        }
+
         partial void OnSelectedDatabaseChanged(string value)
         {
             if (_isAutoLoading)
@@ -405,7 +432,6 @@ namespace SimpleSQLEditor.ViewModels
 
                 SelectedTable = string.Empty;
                 SelectedColumn = string.Empty;
-                SelectedDataType = string.Empty;
 
                 Tables.Clear();
                 Columns.Clear();
@@ -436,7 +462,6 @@ namespace SimpleSQLEditor.ViewModels
                 _isAutoLoading = true;
 
                 SelectedColumn = string.Empty;
-                SelectedDataType = string.Empty;
 
                 Columns.Clear();
 
@@ -448,20 +473,6 @@ namespace SimpleSQLEditor.ViewModels
             }
         }
 
-        partial void OnSelectedColumnChanged(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return;
-
-            if (_columnDataTypes.TryGetValue(value, out var dataType))
-            {
-                SelectedDataType = dataType;
-            }
-        }
-
         #endregion
     }
 }
-
-// TODO: Was ist eigentlich mit der Textbox die ColumnValue bindet?
-// TODO: Wie wollen wir denn den Inhalt einer Tabelle anzeigen/laden? Eine extra View vielleicht? ...die wir dann auch über das WindowService öffnen können? ...die dann eine DataGridView enthält? ... die dann z.B. die ersten 100 Einträge anzeigt?
