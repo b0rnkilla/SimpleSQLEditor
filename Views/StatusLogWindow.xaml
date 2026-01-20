@@ -11,6 +11,7 @@
         <!-- #region ListBox showing log entries -->
         <ListBox x:Name="LogListBox"
                  ItemsSource="{Binding StatusHistory}"
+                 SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ScrollViewer.CanContentScroll="False">
@@ -52,14 +53,15 @@
             
             <!-- #region Copyfunction via ContextMenu or Keybinding -->
             <ListBox.ContextMenu>
-                <ContextMenu BorderThickness="1" Width="150">
-                    <MenuItem Click="CopySelected_OnClick">
+                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                             BorderThickness="1"
+                             Width="150">
+                    <MenuItem Command="{Binding CopyCommand}">
                         <MenuItem.Header>
                             <TextBlock Text="Copy to Clipboard"/>
                         </MenuItem.Header>
-                        <MenuItem.Icon >
-                            <TextBlock Text="⧉"
-                                       Margin="4,0,0,0"/>
+                        <MenuItem.Icon>
+                            <TextBlock Text="⧉" Margin="4,0,0,0"/>
                         </MenuItem.Icon>
                     </MenuItem>
                 </ContextMenu>
@@ -67,8 +69,8 @@
 
             <ListBox.InputBindings>
                 <KeyBinding Key="C"
-                    Modifiers="Control"
-                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=CopyCommand}" />
+                            Modifiers="Control"
+                            Command="{Binding CopyCommand}" />
             </ListBox.InputBindings>
             <!-- #endregion -->
             

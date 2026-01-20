@@ -41,7 +41,9 @@ namespace SimpleSQLEditor.Services
             }
 
             var mainViewModel = _serviceProvider.GetRequiredService<MainViewModel>();
-            _statusLogWindow.DataContext = mainViewModel;
+
+            var statusLogViewModel = new StatusLogViewModel(mainViewModel.StatusHistory);
+            _statusLogWindow.DataContext = statusLogViewModel;
 
             if (_statusLogWindow.IsVisible)
             {
