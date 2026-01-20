@@ -1,8 +1,10 @@
-﻿namespace SimpleSQLEditor.Services
+﻿using System.Windows;
+
+namespace SimpleSQLEditor.Services
 {
     public interface IWindowService
     {
-        event EventHandler<bool> IsStatusLogOpenChanged;
-        void ShowStatusLog();
+        void ShowWindow<TWindow>(object viewModel, Action<bool>? onOpenChanged = null)
+            where TWindow : Window;
     }
 }

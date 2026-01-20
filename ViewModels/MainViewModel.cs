@@ -18,7 +18,7 @@ namespace SimpleSQLEditor.ViewModels
 
         private bool _isAutoLoading;
 
-        private const int StatusStepDelayMs = 1000;
+        private const int StatusStepDelayMs = 500;
 
         #endregion
 
@@ -63,10 +63,7 @@ namespace SimpleSQLEditor.ViewModels
         public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService)
         {
             _sqlAdminService = sqlAdminService;
-
             _windowService = windowService;
-
-            _windowService.IsStatusLogOpenChanged += (_, isOpen) => IsStatusLogOpen = isOpen;
         }
 
         #endregion
@@ -76,7 +73,11 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private void OpenStatusLog()
         {
-            _windowService.ShowStatusLog();
+            var statusLogViewModel = new StatusLogViewModel(StatusHistory);
+
+            _windowService.ShowWindow<Views.StatusLogWindow>(
+                statusLogViewModel,
+                isOpen => IsStatusLogOpen = isOpen);
         }
 
         [RelayCommand]
@@ -418,7 +419,7 @@ namespace SimpleSQLEditor.ViewModels
             if (_isAutoLoading)
                 return;
 
-            _ = HandleSelectedDatabaseChangedAsync(value);
+            FireAndForget(() => HandleSelectedDatabaseChangedAsync(value));
         }
 
         private async Task HandleSelectedDatabaseChangedAsync(string value)
@@ -449,7 +450,7 @@ namespace SimpleSQLEditor.ViewModels
             if (_isAutoLoading)
                 return;
 
-            _ = HandleSelectedTableChangedAsync(value);
+            FireAndForget(() => HandleSelectedTableChangedAsync(value));
         }
 
         private async Task HandleSelectedTableChangedAsync(string value)
@@ -470,6 +471,26 @@ namespace SimpleSQLEditor.ViewModels
             finally
             {
                 _isAutoLoading = false;
+            }
+        }
+
+        private void FireAndForget(Func<Task> asyncAction)
+        {
+            _ = FireAndForgetInternalAsync(asyncAction);
+        }
+
+        private async Task FireAndForgetInternalAsync(Func<Task> asyncAction)
+        {
+            try
+            {
+                await asyncAction();
+            }
+            catch (Exception ex)
+            {
+                await SetStatusAsync(
+                    StatusLevel.Error,
+                    $"Background error: {ex.Message}",
+                    withDelay: false);
             }
         }
 

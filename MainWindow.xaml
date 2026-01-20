@@ -19,7 +19,7 @@
             <GroupBox.Header>
                 <TextBlock Text="Status Message:"
                            FontWeight="Bold"
-                           Margin="1,5,1,2" />
+                           Margin="1,0,1,2" />
             </GroupBox.Header>
 
             <Grid>
@@ -87,7 +87,7 @@
                 <GroupBox.Header>
                     <TextBlock Text="Connection String:"
                                FontWeight="Bold"
-                               Margin="1,5,1,2" />
+                               Margin="1,0,1,2" />
                 </GroupBox.Header>
 
                 <Grid>

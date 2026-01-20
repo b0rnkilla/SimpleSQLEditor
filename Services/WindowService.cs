@@ -1,6 +1,5 @@
-﻿using SimpleSQLEditor.ViewModels;
-using SimpleSQLEditor.Views;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace SimpleSQLEditor.Services
 {
@@ -9,7 +8,8 @@ namespace SimpleSQLEditor.Services
         #region Fields
 
         private readonly IServiceProvider _serviceProvider;
-        private StatusLogWindow? _statusLogWindow;
+
+        private readonly Dictionary<Type, Window> _openWindows = new();
 
         #endregion
 
@@ -24,34 +24,39 @@ namespace SimpleSQLEditor.Services
 
         #region Methods & Events
 
-        public event EventHandler<bool>? IsStatusLogOpenChanged;
-
-        public void ShowStatusLog()
+        public void ShowWindow<TWindow>(object viewModel, Action<bool>? onOpenChanged = null)
+            where TWindow : Window
         {
-            if (_statusLogWindow == null)
+            var windowType = typeof(TWindow);
+
+            if (_openWindows.TryGetValue(windowType, out var existingWindow))
             {
-                _statusLogWindow = _serviceProvider.GetRequiredService<StatusLogWindow>();
-                _statusLogWindow.Closed += (_, _) =>
-                {
-                    _statusLogWindow = null;
-                    IsStatusLogOpenChanged?.Invoke(this, false);
-                };
-
-                IsStatusLogOpenChanged?.Invoke(this, true);
-            }
-
-            var mainViewModel = _serviceProvider.GetRequiredService<MainViewModel>();
-
-            var statusLogViewModel = new StatusLogViewModel(mainViewModel.StatusHistory);
-            _statusLogWindow.DataContext = statusLogViewModel;
-
-            if (_statusLogWindow.IsVisible)
-            {
-                _statusLogWindow.Activate();
+                existingWindow.Activate();
                 return;
             }
 
-            _statusLogWindow.Show();
+            var window = _serviceProvider.GetRequiredService<TWindow>();
+
+            window.DataContext = viewModel;
+
+            var owner = Application.Current?.MainWindow;
+            if (owner is not null && owner != window)
+            {
+                window.Owner = owner;
+            }
+
+            window.Closed += (_, _) =>
+            {
+                _openWindows.Remove(windowType);
+                onOpenChanged?.Invoke(false);
+            };
+
+            _openWindows[windowType] = window;
+
+            onOpenChanged?.Invoke(true);
+
+            window.Show();
+            window.Activate();
         }
 
         #endregion

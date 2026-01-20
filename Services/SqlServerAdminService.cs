@@ -6,6 +6,12 @@ namespace SimpleSQLEditor.Services
 {
     public class SqlServerAdminService
     {
+        #region Fields
+
+        private const int DefaultCommandTimeoutSeconds = 30;
+
+        #endregion
+
         #region Methods
 
         public async Task TestConnectionAsync(string connectionString)
@@ -31,7 +37,10 @@ ORDER BY [name];";
             await using var connection = new SqlConnection(masterConnectionString);
             await connection.OpenAsync();
 
-            await using var command = new SqlCommand(sql, connection);
+            await using var command = new SqlCommand(sql, connection)
+            {
+                CommandTimeout = DefaultCommandTimeoutSeconds
+            };
             await using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -84,7 +93,10 @@ ORDER BY [name];";
             await using var connection = new SqlConnection(databaseConnectionString);
             await connection.OpenAsync();
 
-            await using var command = new SqlCommand(sql, connection);
+            await using var command = new SqlCommand(sql, connection)
+            {
+                CommandTimeout = DefaultCommandTimeoutSeconds
+            };
             await using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())
@@ -155,7 +167,10 @@ ORDER BY c.column_id;";
             await using var connection = new SqlConnection(databaseConnectionString);
             await connection.OpenAsync();
 
-            await using var command = new SqlCommand(sql, connection);
+            await using var command = new SqlCommand(sql, connection)
+            {
+                CommandTimeout = DefaultCommandTimeoutSeconds
+            };
             command.Parameters.AddWithValue("@TableName", tableName);
 
             await using var reader = await command.ExecuteReaderAsync();
@@ -225,7 +240,11 @@ END";
             await using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            await using var command = new SqlCommand(sql, connection);
+            await using var command = new SqlCommand(sql, connection)
+            {
+                CommandTimeout = DefaultCommandTimeoutSeconds
+            };
+
             await command.ExecuteNonQueryAsync();
         }
 

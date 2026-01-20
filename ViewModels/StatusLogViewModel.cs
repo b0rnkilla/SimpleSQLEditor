@@ -50,6 +50,7 @@ namespace SimpleSQLEditor.ViewModels
 
             Clipboard.SetText($"[{SelectedEntry.Timestamp:HH:mm:ss}] {SelectedEntry.Message}");
         }
+
         partial void OnSelectedEntryChanged(StatusEntry? value)
         {
             CopyCommand.NotifyCanExecuteChanged();
