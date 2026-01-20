@@ -1,4 +1,4 @@
-﻿namespace EfPlayground.Infrastructure
+﻿namespace SimpleSQLEditor.Infrastructure
 {
     public enum StatusLevel
     {

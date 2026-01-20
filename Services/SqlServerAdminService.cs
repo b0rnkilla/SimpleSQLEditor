@@ -1,8 +1,8 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Text.RegularExpressions;
-using EfPlayground.Infrastructure;
+using SimpleSQLEditor.Infrastructure;
 
-namespace EfPlayground.Services
+namespace SimpleSQLEditor.Services
 {
     public class SqlServerAdminService
     {

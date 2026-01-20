@@ -1,10 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using EfPlayground.Infrastructure;
-using EfPlayground.Services;
+using SimpleSQLEditor.Infrastructure;
+using SimpleSQLEditor.Services;
 using System.Collections.ObjectModel;
 
-namespace EfPlayground.ViewModels
+namespace SimpleSQLEditor.ViewModels
 {
     public partial class MainViewModel : ObservableObject
     {

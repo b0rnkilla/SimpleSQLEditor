@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 
-namespace EfPlayground.Views
+namespace SimpleSQLEditor.Views
 {
     public partial class StatusLogWindow : Window
     {

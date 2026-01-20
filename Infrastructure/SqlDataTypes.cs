@@ -1,4 +1,4 @@
-﻿namespace EfPlayground.Infrastructure
+﻿namespace SimpleSQLEditor.Infrastructure
 {
     public static class SqlDataTypes
     {

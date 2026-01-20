@@ -1,9 +1,9 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using EfPlayground.Services;
+using SimpleSQLEditor.Services;
 
-namespace EfPlayground
+namespace SimpleSQLEditor
 {
     public partial class App : Application
     {

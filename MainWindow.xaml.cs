@@ -1,7 +1,7 @@
 ﻿using System.Windows;
-using EfPlayground.ViewModels;
+using SimpleSQLEditor.ViewModels;
 
-namespace EfPlayground
+namespace SimpleSQLEditor
 {
     public partial class MainWindow : Window
     {

@@ -1,8 +1,8 @@
-﻿using EfPlayground.ViewModels;
-using EfPlayground.Views;
+﻿using SimpleSQLEditor.ViewModels;
+using SimpleSQLEditor.Views;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EfPlayground.Services
+namespace SimpleSQLEditor.Services
 {
     public class WindowService : IWindowService
     {

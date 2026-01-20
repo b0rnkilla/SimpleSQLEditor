@@ -1,4 +1,4 @@
-﻿namespace EfPlayground.Services
+﻿namespace SimpleSQLEditor.Services
 {
     public interface IWindowService
     {
