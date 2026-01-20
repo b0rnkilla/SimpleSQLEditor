@@ -14,7 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
-        <!--#region Status-->
+        <!-- #region Status -->
         <GroupBox Margin="0,0,0,8">
             <GroupBox.Header>
                 <TextBlock Text="Status:"
@@ -29,7 +29,8 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBox Grid.Column="0"
-                         Text="{Binding StatusText}">
+                         Text="{Binding StatusText}"
+                         IsReadOnly="True">
 
                     <TextBox.Style>
                         <Style TargetType="TextBox">
@@ -39,17 +40,14 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding StatusLevel}" Value="Warning">
                                     <Setter Property="Foreground" Value="Goldenrod"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
 
                                 <DataTrigger Binding="{Binding StatusLevel}" Value="Success">
                                     <Setter Property="Foreground" Value="Green"/>
-                                    <Setter Property="FontWeight" Value="Bold"/>
                                 </DataTrigger>
 
                                 <DataTrigger Binding="{Binding StatusLevel}" Value="Error">
                                     <Setter Property="Foreground" Value="Red"/>
-                                    <Setter Property="FontWeight" Value="Normal"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -74,16 +72,16 @@
                 </Button>
             </Grid>
         </GroupBox>
-        <!--#endregion-->
+        <!-- #endregion -->
         
-        <!--#region SQL Connection & DB -->
+        <!-- #region SQL Connection & DB -->
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!--#region Connection -->
+            <!-- #region Connection -->
             <GroupBox Grid.Row="0"
                       Margin="0,0,0,8">
                 <GroupBox.Header>
@@ -116,9 +114,9 @@
                     </Grid>
                 </Grid>
             </GroupBox>
-            <!--#endregion-->
+            <!-- #endregion -->
 
-            <!--#region DB / Tables / Columns -->
+            <!-- #region DB / Tables / Columns -->
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -126,7 +124,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!--region Databases -->
+                <!-- #region Databases -->
                 <GroupBox Margin="0,0,8,0">
                     <GroupBox.Header>
                         <TextBlock Text="Database:"
@@ -156,9 +154,9 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <!--#endregion-->
+                <!-- endregion -->
 
-                <!--#region Tables -->
+                <!-- #region Tables -->
                 <GroupBox Grid.Column="1" Margin="0,0,8,0">
                     <GroupBox.Header>
                         <TextBlock Text="Table:"
@@ -188,9 +186,9 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <!--#endregion-->
+                <!-- #endregion -->
 
-                <!--#region Columns -->
+                <!-- #region Columns -->
                 <GroupBox Grid.Column="2">
                     <GroupBox.Header>
                         <TextBlock Text="Column:"
@@ -208,9 +206,6 @@
                                   SelectedItem="{Binding SelectedDataType}"
                                   Margin="3"/>
 
-                        <TextBox Text="{Binding ColumnValue, UpdateSourceTrigger=PropertyChanged}"
-                                 Margin="3" />
-
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
                             <Button Width="90" Margin="0,0,6,0"
                                     Content="↻ Refresh"
@@ -227,13 +222,13 @@
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
-                <!--#endregion-->
+                <!-- #endregion -->
                 
             </Grid>
-            <!--#endregion-->
+            <!-- #endregion -->
             
         </Grid>
-        <!--#endregion-->
+        <!-- #endregion -->
         
     </Grid>
 </Window>

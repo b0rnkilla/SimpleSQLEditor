@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using EfPlayground.Infrastructure;
 using EfPlayground.Services;
-using EfPlayground.Views;
 using System.Collections.ObjectModel;
 
 namespace EfPlayground.ViewModels
@@ -56,9 +55,6 @@ namespace EfPlayground.ViewModels
         [ObservableProperty]
         private string _selectedDataType;
 
-        [ObservableProperty]
-        private string _columnValue;
-
         public ObservableCollection<string> Databases { get; } = new();
         public ObservableCollection<string> Tables { get; } = new();
         public ObservableCollection<string> Columns { get; } = new();
@@ -97,7 +93,8 @@ namespace EfPlayground.ViewModels
                 await _sqlAdminService.TestConnectionAsync(ConnectionString);
 
                 IsConnected = true;
-                await SetStatusAsync(StatusLevel.Success, "Ready");
+
+                await SetStatusAsync(StatusLevel.Success, "Connection established.");
 
                 await LoadDatabasesAsync();
             }
@@ -113,17 +110,18 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                await SetStatusAsync(StatusLevel.Warning, "Loading databases...");
+                await SetStatusAsync(StatusLevel.Info, "Loading databases...");
 
                 var databases = await _sqlAdminService.GetDatabasesAsync(ConnectionString);
 
                 Databases.Clear();
+
                 foreach (var db in databases)
                 {
                     Databases.Add(db);
                 }
 
-                await SetStatusAsync(StatusLevel.Success, $"Loaded {Databases.Count} databases.");
+                await SetStatusAsync(StatusLevel.Info, $"Loaded {Databases.Count} databases.");
             }
             catch (Exception ex)
             {
@@ -136,16 +134,17 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                StatusText = "Creating database...";
+                await SetStatusAsync(StatusLevel.Info, "Creating database...");
 
                 await _sqlAdminService.CreateDatabaseAsync(ConnectionString, SelectedDatabase);
 
-                StatusText = $"Database created: {SelectedDatabase}";
+                await SetStatusAsync(StatusLevel.Info, $"Database created: {SelectedDatabase}");
+
                 await LoadDatabasesAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -154,18 +153,19 @@ namespace EfPlayground.ViewModels
         {
             try
             {
-                StatusText = "Deleting database...";
+                await SetStatusAsync(StatusLevel.Info, "Deleting database...");
 
                 await _sqlAdminService.DeleteDatabaseAsync(ConnectionString, SelectedDatabase);
 
-                StatusText = $"Database deleted: {SelectedDatabase}";
+                await SetStatusAsync(StatusLevel.Info, $"Database deleted: {SelectedDatabase}");
+
                 SelectedDatabase = string.Empty;
 
                 await LoadDatabasesAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -174,29 +174,31 @@ namespace EfPlayground.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase))
             {
-                StatusText = "No database selected.";
+                await SetStatusAsync(StatusLevel.Info, "No database selected.");
+
                 return;
             }
 
             try
             {
-                StatusText = "Loading tables...";
+                await SetStatusAsync(StatusLevel.Info, "Loading tables...");
 
                 var tables = await _sqlAdminService.GetTablesAsync(
                     ConnectionString,
                     SelectedDatabase);
 
                 Tables.Clear();
+
                 foreach (var table in tables)
                 {
                     Tables.Add(table);
                 }
 
-                StatusText = $"Loaded {Tables.Count} tables.";
+                await SetStatusAsync(StatusLevel.Info, $"Loaded {Tables.Count} tables.");
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -206,25 +208,27 @@ namespace EfPlayground.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
                 string.IsNullOrWhiteSpace(SelectedTable))
             {
-                StatusText = "Database or table name missing.";
+                await SetStatusAsync(StatusLevel.Error, "Database or table name missing.", withDelay: false);
+
                 return;
             }
 
             try
             {
-                StatusText = "Creating table...";
+                await SetStatusAsync(StatusLevel.Info, "Creating table...");
 
                 await _sqlAdminService.CreateTableAsync(
                     ConnectionString,
                     SelectedDatabase,
                     SelectedTable);
 
-                StatusText = $"Table created: {SelectedTable}";
+                await SetStatusAsync(StatusLevel.Info, $"Table created: {SelectedTable}");
+
                 await LoadTablesAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -234,27 +238,29 @@ namespace EfPlayground.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
                 string.IsNullOrWhiteSpace(SelectedTable))
             {
-                StatusText = "Database or table name missing.";
+                await SetStatusAsync(StatusLevel.Error, "Database or table name missing.", withDelay: false);
+
                 return;
             }
 
             try
             {
-                StatusText = "Deleting table...";
+                await SetStatusAsync(StatusLevel.Info, "Deleting table...");
 
                 await _sqlAdminService.DeleteTableAsync(
                     ConnectionString,
                     SelectedDatabase,
                     SelectedTable);
 
-                StatusText = $"Table deleted: {SelectedTable}";
+                await SetStatusAsync(StatusLevel.Info, $"Table deleted: {SelectedTable}");
+
                 SelectedTable = string.Empty;
 
                 await LoadTablesAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -263,13 +269,14 @@ namespace EfPlayground.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                StatusText = "No database or table selected.";
+                await SetStatusAsync(StatusLevel.Error, "No database or table selected.", withDelay: false);
+
                 return;
             }
 
             try
             {
-                StatusText = "Loading columns...";
+                await SetStatusAsync(StatusLevel.Info, "Loading columns...");
 
                 var map = await _sqlAdminService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
 
@@ -285,17 +292,16 @@ namespace EfPlayground.ViewModels
                     Columns.Add(columnName);
                 }
 
-                // NEU: Wenn bereits eine Column gewählt ist, Datentyp synchronisieren
                 if (!string.IsNullOrWhiteSpace(SelectedColumn) && _columnDataTypes.TryGetValue(SelectedColumn, out var dataType))
                 {
                     SelectedDataType = dataType;
                 }
 
-                StatusText = $"Loaded {Columns.Count} columns.";
+                await SetStatusAsync(StatusLevel.Info, $"Loaded {Columns.Count} columns.");
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -307,22 +313,24 @@ namespace EfPlayground.ViewModels
                 string.IsNullOrWhiteSpace(SelectedColumn) ||
                 string.IsNullOrWhiteSpace(SelectedDataType))
             {
-                StatusText = "Database, table, column or data type missing.";
+                await SetStatusAsync(StatusLevel.Error, "Database, table, column or data type missing.", withDelay: false);
+
                 return;
             }
 
             try
             {
-                StatusText = "Creating column...";
+                await SetStatusAsync(StatusLevel.Info, "Creating column...");
 
                 await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn, SelectedDataType);
 
-                StatusText = $"Column created: {SelectedColumn}";
+                await SetStatusAsync(StatusLevel.Info, $"Column created: {SelectedColumn}");
+
                 await LoadColumnsAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -333,24 +341,26 @@ namespace EfPlayground.ViewModels
                 string.IsNullOrWhiteSpace(SelectedTable) ||
                 string.IsNullOrWhiteSpace(SelectedColumn))
             {
-                StatusText = "Database, table or column name missing.";
+                await SetStatusAsync(StatusLevel.Error, "Database, table or column name missing.", withDelay: false);
+
                 return;
             }
 
             try
             {
-                StatusText = "Deleting column...";
+                await SetStatusAsync(StatusLevel.Info, "Deleting column...");
 
                 await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, SelectedColumn);
 
-                StatusText = $"Column deleted: {SelectedColumn}";
+                await SetStatusAsync(StatusLevel.Info, $"Column deleted: {SelectedColumn}");
+
                 SelectedColumn = string.Empty;
 
                 await LoadColumnsAsync();
             }
             catch (Exception ex)
             {
-                StatusText = $"Error: {ex.Message}";
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
 
@@ -452,3 +462,6 @@ namespace EfPlayground.ViewModels
         #endregion
     }
 }
+
+// TODO: Was ist eigentlich mit der Textbox die ColumnValue bindet?
+// TODO: Wie wollen wir denn den Inhalt einer Tabelle anzeigen/laden? Eine extra View vielleicht? ...die wir dann auch über das WindowService öffnen können? ...die dann eine DataGridView enthält? ... die dann z.B. die ersten 100 Einträge anzeigt?

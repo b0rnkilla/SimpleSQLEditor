@@ -7,12 +7,15 @@
         mc:Ignorable="d"
         Title="Status Log" Height="400" Width="500">
     <Grid Margin="5">
-
-        <ListBox ItemsSource="{Binding StatusHistory}"
+        
+        <!-- #region ListBox showing log entries -->
+        <ListBox x:Name="LogListBox"
+                 ItemsSource="{Binding StatusHistory}"
                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ScrollViewer.CanContentScroll="False">
 
+            <!-- #region Different colors per Level-->
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock TextWrapping="Wrap">
@@ -25,17 +28,14 @@
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Level}" Value="Warning">
                                         <Setter Property="Foreground" Value="Goldenrod"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
                                     </DataTrigger>
 
                                     <DataTrigger Binding="{Binding Level}" Value="Success">
                                         <Setter Property="Foreground" Value="Green"/>
-                                        <Setter Property="FontWeight" Value="Bold"/>
                                     </DataTrigger>
 
                                     <DataTrigger Binding="{Binding Level}" Value="Error">
                                         <Setter Property="Foreground" Value="Red"/>
-                                        <Setter Property="FontWeight" Value="Normal"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -48,6 +48,32 @@
                     </TextBlock>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+            <!-- #endregion -->
+            
+            <!-- #region Copyfunction via ContextMenu or Keybinding -->
+            <ListBox.ContextMenu>
+                <ContextMenu BorderThickness="1" Width="150">
+                    <MenuItem Click="CopySelected_OnClick">
+                        <MenuItem.Header>
+                            <TextBlock Text="Copy to Clipboard"/>
+                        </MenuItem.Header>
+                        <MenuItem.Icon >
+                            <TextBlock Text="⧉"
+                                       Margin="4,0,0,0"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+
+            <ListBox.InputBindings>
+                <KeyBinding Key="C"
+                    Modifiers="Control"
+                    Command="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=CopyCommand}" />
+            </ListBox.InputBindings>
+            <!-- #endregion -->
+            
         </ListBox>
+        <!-- #endregion -->
+        
     </Grid>
 </Window>
