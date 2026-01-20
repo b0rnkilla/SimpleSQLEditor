@@ -171,7 +171,7 @@ namespace SimpleSQLEditor.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase))
             {
-                await SetStatusAsync(StatusLevel.Info, "No database selected.");
+                await SetStatusAsync(StatusLevel.Warning, "No database selected.");
 
                 return;
             }
@@ -205,7 +205,7 @@ namespace SimpleSQLEditor.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
                 string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Error, "Database or table name missing.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.", withDelay: false);
 
                 return;
             }
@@ -235,7 +235,7 @@ namespace SimpleSQLEditor.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
                 string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Error, "Database or table name missing.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.", withDelay: false);
 
                 return;
             }
@@ -266,7 +266,7 @@ namespace SimpleSQLEditor.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Error, "No database or table selected.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.", withDelay: false);
 
                 return;
             }
@@ -360,6 +360,40 @@ namespace SimpleSQLEditor.ViewModels
                 SelectedColumn = string.Empty;
 
                 await LoadColumnsAsync();
+            }
+            catch (Exception ex)
+            {
+                await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
+            }
+        }
+
+        [RelayCommand]
+        private async Task OpenTableDataAsync()
+        {
+            if (!IsConnected)
+            {
+                await SetStatusAsync(StatusLevel.Warning, "Not connected.", withDelay: false);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
+            {
+                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.", withDelay: false);
+                return;
+            }
+
+            try
+            {
+                var tableDataViewModel = new TableDataViewModel(
+                    _sqlAdminService,
+                    ConnectionString,
+                    SelectedDatabase,
+                    SelectedTable,
+                    maxRows: 100);
+
+                _windowService.ShowWindow<Views.TableDataWindow>(tableDataViewModel);
+
+                await tableDataViewModel.LoadAsync();
             }
             catch (Exception ex)
             {

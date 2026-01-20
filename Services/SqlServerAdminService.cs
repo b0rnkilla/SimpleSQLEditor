@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Text.RegularExpressions;
 using SimpleSQLEditor.Infrastructure;
+using System.Data;
 
 namespace SimpleSQLEditor.Services
 {
@@ -304,6 +305,38 @@ END";
             }
 
             return typeName;
+        }
+
+        public async Task<DataTable> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows)
+        {
+            EnsureSafeIdentifier(databaseName);
+            EnsureSafeIdentifier(tableName);
+
+            if (maxRows <= 0)
+                throw new ArgumentOutOfRangeException(nameof(maxRows), "Max rows must be greater than 0.");
+
+            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+
+            var sql = $@"
+SELECT TOP (@MaxRows) *
+FROM dbo.[{tableName}];";
+
+            await using var connection = new SqlConnection(databaseConnectionString);
+            await connection.OpenAsync();
+
+            await using var command = new SqlCommand(sql, connection)
+            {
+                CommandTimeout = DefaultCommandTimeoutSeconds
+            };
+
+            command.Parameters.AddWithValue("@MaxRows", maxRows);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            var table = new DataTable();
+            table.Load(reader);
+
+            return table;
         }
 
         #endregion

@@ -31,8 +31,11 @@ namespace SimpleSQLEditor
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
             services.AddSingleton<SqlServerAdminService>();
-            services.AddTransient<Views.StatusLogWindow>();
             services.AddSingleton<IWindowService, WindowService>();
+
+            services.AddTransient<Views.StatusLogWindow>();
+            services.AddTransient<Views.TableDataWindow>();
+
         }
 
         protected override async void OnStartup(StartupEventArgs e)

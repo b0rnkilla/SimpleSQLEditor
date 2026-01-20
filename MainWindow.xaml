@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor"
         mc:Ignorable="d"
-        Title="Simple SQL Editor" Height="265" Width="950"
+        Title="Simple SQL Editor" Height="275" Width="950"
         ResizeMode="NoResize">
 
     <Grid Margin="12,5,12,12">
@@ -177,6 +177,12 @@
                                     Command="{Binding DeleteTableCommand}"
                                     IsEnabled="{Binding IsConnected}" />
                         </StackPanel>
+
+                        <Button Margin="0,6,0,0"
+                                Content="▦ Show TOP 100"
+                                Command="{Binding OpenTableDataCommand}"
+                                IsEnabled="{Binding IsConnected}" />
+
                     </StackPanel>
                 </GroupBox>
                 <!-- #endregion -->
