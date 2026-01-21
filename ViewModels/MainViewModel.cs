@@ -14,6 +14,8 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IWindowService _windowService;
 
+        private readonly IDialogService _dialogService;
+
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _isAutoLoading;
@@ -63,10 +65,11 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService)
+        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService, IDialogService dialogService)
         {
             _sqlAdminService = sqlAdminService;
             _windowService = windowService;
+            _dialogService = dialogService;
         }
 
         #endregion
@@ -151,6 +154,16 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteDatabaseAsync()
         {
+            var shouldDelete = _dialogService.Confirm(
+                "Confirm delete",
+                $"Do you really want to delete database '{SelectedDatabase}'?");
+
+            if (!shouldDelete)
+            {
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
+                return;
+            }
+
             try
             {
                 await SetStatusAsync(StatusLevel.Info, "Deleting database...");
@@ -240,6 +253,16 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.", withDelay: false);
 
+                return;
+            }
+
+            var shouldDelete = _dialogService.Confirm(
+                "Confirm delete",
+                $"Do you really want to delete table '{SelectedTable}'?");
+
+            if (!shouldDelete)
+            {
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
                 return;
             }
 
@@ -349,6 +372,16 @@ namespace SimpleSQLEditor.ViewModels
             if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out _) || string.IsNullOrWhiteSpace(columnName))
             {
                 await SetStatusAsync(StatusLevel.Error, "Invalid column selection.", withDelay: false);
+                return;
+            }
+
+            var shouldDelete = _dialogService.Confirm(
+                "Confirm delete",
+                $"Do you really want to delete column '{columnName}'?");
+
+            if (!shouldDelete)
+            {
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
                 return;
             }
 
