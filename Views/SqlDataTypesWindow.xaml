@@ -28,11 +28,20 @@
                  ScrollViewer.VerticalScrollBarVisibility="Auto"
                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
 
-            <!-- #region Copyfunction via ContextMenu or Keybinding -->
+            <!-- #region Add- & Copyfunction via ContextMenu or Keybinding -->
             <ListBox.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
                              BorderThickness="1" Width="160">
 
+                    <MenuItem Command="{Binding AddToColumnDefinitionCommand}">
+                        <MenuItem.Header>
+                            <TextBlock Text="Add to ColumnName"/>
+                        </MenuItem.Header>
+                        <MenuItem.Icon>
+                            <TextBlock Text="＋" Margin="4,0,0,0"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    
                     <MenuItem Command="{Binding CopyCommand}">
                         <MenuItem.Header>
                             <TextBlock Text="Copy to Clipboard"/>

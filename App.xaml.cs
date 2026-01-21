@@ -33,6 +33,7 @@ namespace SimpleSQLEditor
             services.AddSingleton<SqlServerAdminService>();
             services.AddSingleton<IWindowService, WindowService>();
             services.AddSingleton<IDialogService, DialogService>();
+            services.AddSingleton<IColumnDefinitionService, ColumnDefinitionService>();
 
             services.AddTransient<Views.StatusLogWindow>();
             services.AddTransient<Views.TableDataWindow>();

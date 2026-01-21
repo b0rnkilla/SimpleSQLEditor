@@ -16,6 +16,8 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IDialogService _dialogService;
 
+        private readonly IColumnDefinitionService _columnDefinitionService;
+
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _isAutoLoading;
@@ -68,11 +70,25 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService, IDialogService dialogService)
+        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService, IDialogService dialogService, IColumnDefinitionService columnDefinitionService)
         {
             _sqlAdminService = sqlAdminService;
             _windowService = windowService;
             _dialogService = dialogService;
+            _columnDefinitionService = columnDefinitionService;
+
+            _columnDefinitionService.DataTypeInsertRequested += async (_, dataType) =>
+            {
+                var updated = ApplyDataTypeToColumnDefinition(SelectedColumn, dataType);
+
+                if (string.IsNullOrWhiteSpace(updated))
+                {
+                    await SetStatusAsync(StatusLevel.Warning, "Enter a column name first.");
+                    return;
+                }
+
+                SelectedColumn = updated;
+            };
         }
 
         #endregion
@@ -443,7 +459,7 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private void OpenSqlDataTypes()
         {
-            var viewModel = new SqlDataTypesViewModel();
+            var viewModel = new SqlDataTypesViewModel(_columnDefinitionService);
 
             _windowService.ShowWindow<Views.SqlDataTypesWindow>(
                 viewModel,
@@ -575,6 +591,23 @@ namespace SimpleSQLEditor.ViewModels
                     $"Background error: {ex.Message}",
                     withDelay: false);
             }
+        }
+
+        private static string ApplyDataTypeToColumnDefinition(string? current, string dataType)
+        {
+            var text = (current ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            var openIndex = text.IndexOf('(');
+            if (openIndex >= 0)
+                text = text[..openIndex].TrimEnd();
+
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            return $"{text} ({dataType})";
         }
 
         #endregion
