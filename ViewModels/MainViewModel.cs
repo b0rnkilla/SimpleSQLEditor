@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Configuration;
 using SimpleSQLEditor.Infrastructure;
 using SimpleSQLEditor.Services;
 using System.Collections.ObjectModel;
@@ -11,6 +12,8 @@ namespace SimpleSQLEditor.ViewModels
         #region Fields
 
         private readonly SqlServerAdminService _sqlAdminService;
+
+        private readonly IConfiguration _configuration;
 
         private readonly IWindowService _windowService;
 
@@ -40,9 +43,7 @@ namespace SimpleSQLEditor.ViewModels
         public ObservableCollection<StatusEntry> StatusHistory { get; } = new();
 
         [ObservableProperty]
-        private string _connectionString =
-            //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
-            "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
+        private string _connectionString = string.Empty;
 
         [ObservableProperty]
         private string _selectedDatabase;
@@ -70,12 +71,15 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public MainViewModel(SqlServerAdminService sqlAdminService, IWindowService windowService, IDialogService dialogService, IColumnDefinitionService columnDefinitionService)
+        public MainViewModel(SqlServerAdminService sqlAdminService, IConfiguration configuration, IWindowService windowService, IDialogService dialogService, IColumnDefinitionService columnDefinitionService)
         {
             _sqlAdminService = sqlAdminService;
+            _configuration = configuration;
             _windowService = windowService;
             _dialogService = dialogService;
             _columnDefinitionService = columnDefinitionService;
+
+            ConnectionString = _configuration.GetConnectionString("SqlServer") ?? string.Empty;
 
             _columnDefinitionService.DataTypeInsertRequested += async (_, dataType) =>
             {
