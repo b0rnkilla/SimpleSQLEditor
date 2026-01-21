@@ -613,3 +613,37 @@ namespace SimpleSQLEditor.ViewModels
         #endregion
     }
 }
+
+#region TODO – Roadmap / Lernziele
+
+// TODO: Column Constraints
+// - Allow setting NULL / NOT NULL on column creation
+// - Show NULL / NOT NULL status in column display
+// - Change NULLability of existing columns (ALTER TABLE)
+
+// TODO: Primary Keys
+// - Display PK columns (done read-only in v0.7.7)
+// - Allow setting PK on column creation
+// - Allow removing / changing PK (single vs. composite keys)
+// - Handle identity vs. non-identity PKs
+
+// TODO: Foreign Keys
+// - Display FK relationships (done read-only in v0.7.7)
+// - Add FK to existing column
+// - Select referenced table and column
+// - Configure ON DELETE / ON UPDATE behavior
+
+// TODO: Table Data (EF Core)
+// - Insert new rows (Create)
+// - Edit existing rows (Update)
+// - Delete rows
+// - Handle validation errors
+// - Understand EF Change Tracking
+
+// TODO: EF Core Integration
+// - Introduce DbContext (no Code-First, no migrations)
+// - Dynamic table access without fixed entities
+// - Compare raw SQL vs EF queries
+// - Observe generated SQL
+
+#endregion
