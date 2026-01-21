@@ -112,7 +112,7 @@ Alles, was implementiert wird, dient einem **konkreten Lernziel**.
 
 ## Roadmap
 
-Eine detaillierte, versionierte Roadmap mit geplanten Lernschritten befindet sich in der Datei: ROADMAP.md
+Eine detaillierte, versionierte Roadmap mit geplanten Lernschritten befindet sich in der Datei:  `ROADMAP.md`
 
 Dort sind sowohl kurzfristige Meilensteine als auch langfristige Lernziele dokumentiert.
 
