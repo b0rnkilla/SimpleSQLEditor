@@ -52,17 +52,27 @@ ORDER BY [name];";
             return result;
         }
 
-        public async Task CreateDatabaseAsync(string connectionString, string databaseName)
+        public async Task<bool> CreateDatabaseAsync(string connectionString, string databaseName)
         {
             EnsureSafeIdentifier(databaseName);
 
             var masterConnectionString = BuildMasterConnectionString(connectionString);
-            var sql = $"CREATE DATABASE [{databaseName}];";
 
-            await ExecuteNonQueryAsync(masterConnectionString, sql);
+            var sql = $@"
+IF DB_ID(N'{databaseName}') IS NULL
+BEGIN
+    EXEC('CREATE DATABASE [{databaseName}]');
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
+END";
+
+            return await ExecuteScalarBoolAsync(masterConnectionString, sql);
         }
 
-        public async Task DeleteDatabaseAsync(string connectionString, string databaseName)
+        public async Task<bool> DeleteDatabaseAsync(string connectionString, string databaseName)
         {
             EnsureSafeIdentifier(databaseName);
 
@@ -73,9 +83,14 @@ IF DB_ID(N'{databaseName}') IS NOT NULL
 BEGIN
     ALTER DATABASE [{databaseName}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
     DROP DATABASE [{databaseName}];
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
 END";
 
-            await ExecuteNonQueryAsync(masterConnectionString, sql);
+            return await ExecuteScalarBoolAsync(masterConnectionString, sql);
         }
 
         public async Task<IReadOnlyList<string>> GetTablesAsync(string connectionString, string databaseName)
@@ -108,7 +123,7 @@ ORDER BY [name];";
             return result;
         }
 
-        public async Task CreateTableAsync(string connectionString, string databaseName, string tableName)
+        public async Task<bool> CreateTableAsync(string connectionString, string databaseName, string tableName)
         {
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
@@ -122,12 +137,17 @@ BEGIN
     (
         [Id] INT IDENTITY(1,1) NOT NULL CONSTRAINT [PK_{tableName}] PRIMARY KEY
     );
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
 END";
 
-            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+            return await ExecuteScalarBoolAsync(databaseConnectionString, sql);
         }
 
-        public async Task DeleteTableAsync(string connectionString, string databaseName, string tableName)
+        public async Task<bool> DeleteTableAsync(string connectionString, string databaseName, string tableName)
         {
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
@@ -138,9 +158,14 @@ END";
 IF OBJECT_ID(N'dbo.[{tableName}]', N'U') IS NOT NULL
 BEGIN
     DROP TABLE dbo.[{tableName}];
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
 END";
 
-            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+            return await ExecuteScalarBoolAsync(databaseConnectionString, sql);
         }
 
         public async Task<IReadOnlyDictionary<string, string>> GetColumnDataTypesAsync(string connectionString, string databaseName, string tableName)
@@ -190,7 +215,7 @@ ORDER BY c.column_id;";
             return result;
         }
 
-        public async Task CreateColumnAsync(string connectionString, string databaseName, string tableName, string columnName, string dataType)
+        public async Task<bool> CreateColumnAsync(string connectionString, string databaseName, string tableName, string columnName, string dataType)
         {
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
@@ -203,12 +228,17 @@ ORDER BY c.column_id;";
 IF COL_LENGTH(N'dbo.[{tableName}]', N'{columnName}') IS NULL
 BEGIN
     ALTER TABLE dbo.[{tableName}] ADD [{columnName}] {dataType} NULL;
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
 END";
 
-            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+            return await ExecuteScalarBoolAsync(databaseConnectionString, sql);
         }
 
-        public async Task DeleteColumnAsync(string connectionString, string databaseName, string tableName, string columnName)
+        public async Task<bool> DeleteColumnAsync(string connectionString, string databaseName, string tableName, string columnName)
         {
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
@@ -220,9 +250,14 @@ END";
 IF COL_LENGTH(N'dbo.[{tableName}]', N'{columnName}') IS NOT NULL
 BEGIN
     ALTER TABLE dbo.[{tableName}] DROP COLUMN [{columnName}];
+    SELECT CAST(1 AS bit);
+END
+ELSE
+BEGIN
+    SELECT CAST(0 AS bit);
 END";
 
-            await ExecuteNonQueryAsync(databaseConnectionString, sql);
+            return await ExecuteScalarBoolAsync(databaseConnectionString, sql);
         }
 
         private static string BuildDatabaseConnectionString(string connectionString, string databaseName)
@@ -236,7 +271,7 @@ END";
             return builder.ConnectionString;
         }
 
-        private static async Task ExecuteNonQueryAsync(string connectionString, string sql)
+        private static async Task<bool> ExecuteScalarBoolAsync(string connectionString, string sql)
         {
             await using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
@@ -246,7 +281,9 @@ END";
                 CommandTimeout = DefaultCommandTimeoutSeconds
             };
 
-            await command.ExecuteNonQueryAsync();
+            var result = await command.ExecuteScalarAsync();
+
+            return result is bool b && b;
         }
 
         private static string BuildMasterConnectionString(string connectionString)

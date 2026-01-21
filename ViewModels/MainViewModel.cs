@@ -139,9 +139,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Creating database...");
 
-                await _sqlAdminService.CreateDatabaseAsync(ConnectionString, SelectedDatabase);
+                var created = await _sqlAdminService.CreateDatabaseAsync(ConnectionString, SelectedDatabase);
 
-                await SetStatusAsync(StatusLevel.Info, $"Database created: {SelectedDatabase}");
+                if (created)
+                    await SetStatusAsync(StatusLevel.Success, $"Database created: {SelectedDatabase}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Database already exists: {SelectedDatabase}");
 
                 await LoadDatabasesAsync();
             }
@@ -160,7 +163,7 @@ namespace SimpleSQLEditor.ViewModels
 
             if (!shouldDelete)
             {
-                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.");
                 return;
             }
 
@@ -168,9 +171,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Deleting database...");
 
-                await _sqlAdminService.DeleteDatabaseAsync(ConnectionString, SelectedDatabase);
+                var deleted = await _sqlAdminService.DeleteDatabaseAsync(ConnectionString, SelectedDatabase);
 
-                await SetStatusAsync(StatusLevel.Info, $"Database deleted: {SelectedDatabase}");
+                if (deleted)
+                    await SetStatusAsync(StatusLevel.Success, $"Database deleted: {SelectedDatabase}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Database '{SelectedDatabase}' does not exist.");
 
                 SelectedDatabase = string.Empty;
 
@@ -188,7 +194,6 @@ namespace SimpleSQLEditor.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedDatabase))
             {
                 await SetStatusAsync(StatusLevel.Warning, "No database selected.");
-
                 return;
             }
 
@@ -196,9 +201,7 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading tables...");
 
-                var tables = await _sqlAdminService.GetTablesAsync(
-                    ConnectionString,
-                    SelectedDatabase);
+                var tables = await _sqlAdminService.GetTablesAsync( ConnectionString, SelectedDatabase);
 
                 Tables.Clear();
 
@@ -218,11 +221,9 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task CreateTableAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
-                string.IsNullOrWhiteSpace(SelectedTable))
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.", withDelay: false);
-
+                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.");
                 return;
             }
 
@@ -230,12 +231,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Creating table...");
 
-                await _sqlAdminService.CreateTableAsync(
-                    ConnectionString,
-                    SelectedDatabase,
-                    SelectedTable);
+                var created = await _sqlAdminService.CreateTableAsync(ConnectionString, SelectedDatabase, SelectedTable);
 
-                await SetStatusAsync(StatusLevel.Info, $"Table created: {SelectedTable}");
+                if (created)
+                    await SetStatusAsync(StatusLevel.Success, $"Table created: {SelectedTable}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Table already exists: {SelectedTable}");
 
                 await LoadTablesAsync();
             }
@@ -248,11 +249,9 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteTableAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
-                string.IsNullOrWhiteSpace(SelectedTable))
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.", withDelay: false);
-
+                await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.");
                 return;
             }
 
@@ -262,7 +261,7 @@ namespace SimpleSQLEditor.ViewModels
 
             if (!shouldDelete)
             {
-                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.");
                 return;
             }
 
@@ -270,12 +269,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Deleting table...");
 
-                await _sqlAdminService.DeleteTableAsync(
-                    ConnectionString,
-                    SelectedDatabase,
-                    SelectedTable);
+                var deleted = await _sqlAdminService.DeleteTableAsync(ConnectionString,  SelectedDatabase, SelectedTable);
 
-                await SetStatusAsync(StatusLevel.Info, $"Table deleted: {SelectedTable}");
+                if (deleted)
+                    await SetStatusAsync(StatusLevel.Success, $"Table deleted: {SelectedTable}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Table '{SelectedTable}' does not exist.");
 
                 SelectedTable = string.Empty;
 
@@ -292,8 +291,7 @@ namespace SimpleSQLEditor.ViewModels
         {
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.", withDelay: false);
-
+                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.");
                 return;
             }
 
@@ -326,17 +324,13 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task CreateColumnAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
-                string.IsNullOrWhiteSpace(SelectedTable) ||
-                string.IsNullOrWhiteSpace(SelectedColumn))
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable) || string.IsNullOrWhiteSpace(SelectedColumn))
             {
                 await SetStatusAsync(StatusLevel.Error, "Database, table or column definition missing.", withDelay: false);
                 return;
             }
 
-            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out var dataType) ||
-                string.IsNullOrWhiteSpace(columnName) ||
-                string.IsNullOrWhiteSpace(dataType))
+            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out var dataType) || string.IsNullOrWhiteSpace(columnName) || string.IsNullOrWhiteSpace(dataType))
             {
                 await SetStatusAsync(StatusLevel.Error, "Column must be in format: ColumnName (DataType)", withDelay: false);
                 return;
@@ -346,9 +340,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Creating column...");
 
-                await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName, dataType);
+                var created = await _sqlAdminService.CreateColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName, dataType);
 
-                await SetStatusAsync(StatusLevel.Info, $"Column created: {columnName}");
+                if (created)
+                    await SetStatusAsync(StatusLevel.Success, $"Column created: {columnName}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Column already exists: {columnName}");
 
                 await LoadColumnsAsync();
             }
@@ -361,9 +358,7 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteColumnAsync()
         {
-            if (string.IsNullOrWhiteSpace(SelectedDatabase) ||
-                string.IsNullOrWhiteSpace(SelectedTable) ||
-                string.IsNullOrWhiteSpace(SelectedColumn))
+            if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable) || string.IsNullOrWhiteSpace(SelectedColumn))
             {
                 await SetStatusAsync(StatusLevel.Error, "Database, table or column name missing.", withDelay: false);
                 return;
@@ -381,7 +376,7 @@ namespace SimpleSQLEditor.ViewModels
 
             if (!shouldDelete)
             {
-                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Info, "Delete cancelled.");
                 return;
             }
 
@@ -389,9 +384,12 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Deleting column...");
 
-                await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName);
+                var deleted = await _sqlAdminService.DeleteColumnAsync(ConnectionString, SelectedDatabase, SelectedTable, columnName);
 
-                await SetStatusAsync(StatusLevel.Info, $"Column deleted: {columnName}");
+                if (deleted)
+                    await SetStatusAsync(StatusLevel.Success, $"Column deleted: {columnName}");
+                else
+                    await SetStatusAsync(StatusLevel.Warning, $"Column '{columnName}' does not exist.");
 
                 SelectedColumn = string.Empty;
 
@@ -408,13 +406,13 @@ namespace SimpleSQLEditor.ViewModels
         {
             if (!IsConnected)
             {
-                await SetStatusAsync(StatusLevel.Warning, "Not connected.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Warning, "Not connected.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
-                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.", withDelay: false);
+                await SetStatusAsync(StatusLevel.Warning, "No database or table selected.");
                 return;
             }
 
