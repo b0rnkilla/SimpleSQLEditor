@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SimpleSQLEditor.Services;
 using System.Data;
 
@@ -32,6 +33,17 @@ namespace SimpleSQLEditor.ViewModels
         [ObservableProperty]
         private bool _isLoading;
 
+        [ObservableProperty]
+        private string? _errorText;
+
+        public bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
+
+        #endregion
+
+        #region Commands
+
+        public IAsyncRelayCommand ReloadCommand { get; }
+
         #endregion
 
         #region Constructor
@@ -44,6 +56,8 @@ namespace SimpleSQLEditor.ViewModels
             _databaseName = databaseName;
             _tableName = tableName;
             _maxRows = maxRows;
+
+            ReloadCommand = new AsyncRelayCommand(LoadAsync, CanReload);
         }
 
         #endregion
@@ -55,22 +69,45 @@ namespace SimpleSQLEditor.ViewModels
             if (IsLoading)
                 return;
 
+            if (MaxRows <= 0)
+            {
+                TableData = null;
+                ErrorText = "Max rows must be greater than 0.";
+                OnPropertyChanged(nameof(HasError));
+                return;
+            }
+
             try
             {
                 IsLoading = true;
+                ErrorText = null;
+                OnPropertyChanged(nameof(HasError));
 
-                var dataTable = await _sqlAdminService.GetTableDataAsync(
-                    ConnectionString,
-                    DatabaseName,
-                    TableName,
-                    MaxRows);
+                var dataTable = await _sqlAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
 
                 TableData = dataTable.DefaultView;
+            }
+            catch (Exception ex)
+            {
+                TableData = null;
+                ErrorText = ex.Message;
+                OnPropertyChanged(nameof(HasError));
             }
             finally
             {
                 IsLoading = false;
+                ReloadCommand.NotifyCanExecuteChanged();
             }
+        }
+
+        private bool CanReload()
+        {
+            return !IsLoading;
+        }
+
+        partial void OnIsLoadingChanged(bool value)
+        {
+            ReloadCommand.NotifyCanExecuteChanged();
         }
 
         #endregion

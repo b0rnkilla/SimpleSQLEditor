@@ -39,6 +39,9 @@ namespace SimpleSQLEditor.ViewModels
         private bool _isStatusLogOpen;
 
         [ObservableProperty]
+        private bool _isTableDataOpen;
+
+        [ObservableProperty]
         private string _connectionString =
             //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
             "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
@@ -391,7 +394,9 @@ namespace SimpleSQLEditor.ViewModels
                     SelectedTable,
                     maxRows: 100);
 
-                _windowService.ShowWindow<Views.TableDataWindow>(tableDataViewModel);
+                _windowService.ShowWindow<Views.TableDataWindow>(
+                    tableDataViewModel,
+                    isOpen => IsTableDataOpen = isOpen);
 
                 await tableDataViewModel.LoadAsync();
             }

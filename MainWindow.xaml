@@ -179,10 +179,23 @@
                         </StackPanel>
 
                         <Button Margin="0,6,0,0"
-                                Content="▦ Show TOP 100"
+                                Content="▦ Data"
                                 Command="{Binding OpenTableDataCommand}"
-                                IsEnabled="{Binding IsConnected}" />
-
+                                IsEnabled="{Binding IsConnected}" >
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="IsEnabled" Value="True"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsTableDataOpen}" Value="True">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                                            <Setter Property="IsEnabled" Value="False"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </GroupBox>
                 <!-- #endregion -->

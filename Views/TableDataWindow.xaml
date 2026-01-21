@@ -10,20 +10,88 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   FontWeight="Bold"
-                   Margin="0,0,0,8">
-            <Run Text="{Binding DatabaseName}" />
-            <Run Text="." />
-            <Run Text="{Binding TableName}" />
-        </TextBlock>
+        <!-- #region Header -->
+        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
+            <TextBlock FontWeight="Bold" DockPanel.Dock="Left" VerticalAlignment="Center">
+                <Run Text="{Binding DatabaseName}" />
+                <Run Text="." />
+                <Run Text="{Binding TableName}" />
+            </TextBlock>
 
-        <DataGrid Grid.Row="1"
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <TextBlock Text="Max rows:"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="0,0,6,0"/>
+
+                <TextBox Width="40"
+                         Text="{Binding MaxRows, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,12,0"/>
+
+                <Button Content="↻ Reload"
+                        Command="{Binding ReloadCommand}"
+                        Width="80"
+                        Margin="0,0,8,0"/>
+
+                <TextBlock Text="Loading..."
+                           VerticalAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </DockPanel>
+        <!-- #endregion -->
+
+        <!-- #region Error -->
+        <Border Grid.Row="1"
+                Background="#22FF0000"
+                BorderBrush="#66FF0000"
+                BorderThickness="1"
+                Padding="3"
+                Margin="0,0,0,8">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasError}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+
+            <TextBlock Text="{Binding ErrorText}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+        </Border>
+        <!-- #endregion -->
+
+        <!-- #region Data -->
+        <DataGrid Grid.Row="2"
                   ItemsSource="{Binding TableData}"
                   AutoGenerateColumns="True"
-                  IsReadOnly="True" />
+                  IsReadOnly="True">
+            <DataGrid.Style>
+                <Style TargetType="DataGrid">
+                    <Setter Property="IsEnabled" Value="True"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
+                            <Setter Property="IsEnabled" Value="False"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Style>
+        </DataGrid>
+        <!-- #endregion -->
     </Grid>
 </Window>
