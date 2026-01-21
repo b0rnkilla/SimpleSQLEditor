@@ -1,0 +1,58 @@
+﻿<Window x:Class="SimpleSQLEditor.Views.SqlDataTypesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SimpleSQLEditor.Views"
+        mc:Ignorable="d"
+        Title="SQL Data Types" Height="675" Width="250">
+
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- #region Header -->
+        <TextBlock Grid.Row="0"
+                   Text="Allowed Data Types:"
+                   TextAlignment="Center"
+                   FontWeight="Bold"
+                   Margin="0,0,0,5"/>
+        <!-- #endregion -->
+
+        <!-- #region ListBox showing available Data Types -->
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding AllowedDataTypes}"
+                 SelectedItem="{Binding SelectedDataType, Mode=TwoWay}"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto">
+
+            <!-- #region Copyfunction via ContextMenu or Keybinding -->
+            <ListBox.ContextMenu>
+                <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+                             BorderThickness="1" Width="160">
+
+                    <MenuItem Command="{Binding CopyCommand}">
+                        <MenuItem.Header>
+                            <TextBlock Text="Copy to Clipboard"/>
+                        </MenuItem.Header>
+                        <MenuItem.Icon>
+                            <TextBlock Text="⧉" Margin="4,0,0,0"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListBox.ContextMenu>
+
+            <ListBox.InputBindings>
+                <KeyBinding Key="C"
+                            Modifiers="Control"
+                            Command="{Binding CopyCommand}" />
+            </ListBox.InputBindings>
+            <!-- #endregion -->
+            
+        </ListBox>
+        <!-- #endregion -->
+        
+    </Grid>
+</Window>

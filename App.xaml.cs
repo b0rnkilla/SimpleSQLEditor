@@ -36,7 +36,7 @@ namespace SimpleSQLEditor
 
             services.AddTransient<Views.StatusLogWindow>();
             services.AddTransient<Views.TableDataWindow>();
-
+            services.AddTransient<Views.SqlDataTypesWindow>();
         }
 
         protected override async void OnStartup(StartupEventArgs e)

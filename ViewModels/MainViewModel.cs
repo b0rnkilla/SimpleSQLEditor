@@ -38,12 +38,6 @@ namespace SimpleSQLEditor.ViewModels
         public ObservableCollection<StatusEntry> StatusHistory { get; } = new();
 
         [ObservableProperty]
-        private bool _isStatusLogOpen;
-
-        [ObservableProperty]
-        private bool _isTableDataOpen;
-
-        [ObservableProperty]
         private string _connectionString =
             //"Server=.;Trusted_Connection=True;TrustServerCertificate=True;";
             "Server=C-OFFICE-CW\\SQLEXPRESS2022;Trusted_Connection=True;TrustServerCertificate=True;";
@@ -56,6 +50,15 @@ namespace SimpleSQLEditor.ViewModels
 
         [ObservableProperty]
         private string _selectedColumn;
+
+        [ObservableProperty]
+        private bool _isStatusLogOpen;
+
+        [ObservableProperty]
+        private bool _isTableDataOpen;
+
+        [ObservableProperty]
+        private bool _isSqlDataTypesOpen;
 
         public ObservableCollection<string> Databases { get; } = new();
         public ObservableCollection<string> Tables { get; } = new();
@@ -75,16 +78,6 @@ namespace SimpleSQLEditor.ViewModels
         #endregion
 
         #region Commands
-
-        [RelayCommand]
-        private void OpenStatusLog()
-        {
-            var statusLogViewModel = new StatusLogViewModel(StatusHistory);
-
-            _windowService.ShowWindow<Views.StatusLogWindow>(
-                statusLogViewModel,
-                isOpen => IsStatusLogOpen = isOpen);
-        }
 
         [RelayCommand]
         private async Task ConnectAsync()
@@ -402,6 +395,16 @@ namespace SimpleSQLEditor.ViewModels
         }
 
         [RelayCommand]
+        private void OpenStatusLog()
+        {
+            var statusLogViewModel = new StatusLogViewModel(StatusHistory);
+
+            _windowService.ShowWindow<Views.StatusLogWindow>(
+                statusLogViewModel,
+                isOpen => IsStatusLogOpen = isOpen);
+        }
+
+        [RelayCommand]
         private async Task OpenTableDataAsync()
         {
             if (!IsConnected)
@@ -435,6 +438,16 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
+        }
+
+        [RelayCommand]
+        private void OpenSqlDataTypes()
+        {
+            var viewModel = new SqlDataTypesViewModel();
+
+            _windowService.ShowWindow<Views.SqlDataTypesWindow>(
+                viewModel,
+                isOpen => IsSqlDataTypesOpen = isOpen);
         }
 
         #endregion

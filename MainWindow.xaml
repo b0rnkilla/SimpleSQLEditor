@@ -178,8 +178,8 @@
                                     IsEnabled="{Binding IsConnected}" />
                         </StackPanel>
 
-                        <Button Margin="0,6,0,0"
-                                Content="▦ Data"
+                        <Button Margin="3,6,3,0"
+                                Content="▦ Show Data"
                                 Command="{Binding OpenTableDataCommand}"
                                 IsEnabled="{Binding IsConnected}" >
                             <Button.Style>
@@ -227,6 +227,26 @@
                                     Content="− Delete"
                                     Command="{Binding DeleteColumnCommand}"
                                     IsEnabled="{Binding IsConnected}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
+                            <Button Width="90"
+                                    Margin="0,0,6,0"
+                                    Content="𝑇 DataTypes"
+                                    Command="{Binding OpenSqlDataTypesCommand}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="IsEnabled" Value="True"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSqlDataTypesOpen}" Value="True">
+                                                <Setter Property="IsEnabled" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Width="90" Margin="0,0,6,0" Content="+ Add PK"/>
+                            <Button Width="90" Content="+ Add FK"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>

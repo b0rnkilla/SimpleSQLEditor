@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:SimpleSQLEditor.Views"
         mc:Ignorable="d"
         Title="Status Log" Height="400" Width="500">
+    
     <Grid Margin="5">
         
         <!-- #region ListBox showing log entries -->
@@ -54,8 +55,7 @@
             <!-- #region Copyfunction via ContextMenu or Keybinding -->
             <ListBox.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
-                             BorderThickness="1"
-                             Width="150">
+                             BorderThickness="1" Width="150">
                     <MenuItem Command="{Binding CopyCommand}">
                         <MenuItem.Header>
                             <TextBlock Text="Copy to Clipboard"/>
