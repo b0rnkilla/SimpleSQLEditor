@@ -471,10 +471,10 @@ namespace SimpleSQLEditor.ViewModels
 
             input = input.Trim();
 
-            var openIndex = input.LastIndexOf('(');
+            var openIndex = input.IndexOf('(');
             var closeIndex = input.LastIndexOf(')');
 
-            if (openIndex > 0 && closeIndex > openIndex)
+            if (openIndex > 0 && closeIndex > openIndex && closeIndex == input.Length - 1)
             {
                 columnName = input[..openIndex].Trim();
                 dataType = input[(openIndex + 1)..closeIndex].Trim();
