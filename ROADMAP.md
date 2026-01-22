@@ -20,14 +20,24 @@ Ziel: Tabellen-Schema besser verstehen
 
 ### v0.8.x – Entity Framework Core Einstieg
 
-#### v0.8.1 – EF Core Setup
+#### v0.8.0 – EF Core Setup
 Ziel: EF Core technisch einführen
 
-- [ ] EF Core NuGet Packages
-- [ ] DbContext einführen
-- [ ] ConnectionString aus UI verwenden
-- [ ] Kein Code-First, keine Migration
-- [ ] Erste einfache Abfrage
+- [x] EF Core NuGet Packages
+- [x] DbContext einführen
+- [x] ConnectionString aus UI verwenden (Runtime)
+- [x] Kein Code-First, keine Migration
+- [x] Erste einfache Abfrage (sys.databases)
+- [x] EF Raw SQL Kompositions-Fallen verstanden und behoben (ORDER BY / Semikolon)
+
+#### v0.8.1 – SQL/EF Umschaltung vorbereiten (Architektur)
+Ziel: Vergleichbar und verständlich zwischen SQL und EF umschalten können
+
+- [ ] Globalen Modus einführen: `DataAccessMode = Sql | Ef`
+- [ ] Fassade einführen: `IDataAccessService` (Start: Datenbanken)
+- [ ] EF kann bewusst an SQL delegieren; Log zeigt `EF->SQL`
+- [ ] UI-Switch vor Connect (Modus auswählbar)
+- [ ] Logging/Status so gestalten, dass Provider pro Operation sichtbar ist
 
 #### v0.8.2 – Tabellen dynamisch mit EF lesen
 Ziel: EF ohne feste Entities verstehen
@@ -41,17 +51,17 @@ Ziel: EF ohne feste Entities verstehen
 
 ### v0.9.x – Daten bearbeiten (EF Core)
 
-#### v0.9.1 – Row Selection
+#### v0.9.0 – Row Selection
 - [ ] Zeilen im DataGrid auswählen
 - [ ] Primary Key erkennen
 - [ ] Anzeige der Row-Details
 
-#### v0.9.2 – Update einzelner Werte
+#### v0.9.1 – Update einzelner Werte
 - [ ] Einzelne Spalten bearbeiten
 - [ ] Update über EF Core
 - [ ] Validierung & Fehlerhandling
 
-#### v0.9.3 – Change Tracking verstehen
+#### v0.9.2 – Change Tracking verstehen
 - [ ] Modified / Added / Deleted States
 - [ ] Wann EF SQL erzeugt
 - [ ] Save / Cancel Konzepte

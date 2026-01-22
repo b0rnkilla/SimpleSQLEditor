@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleSQLEditor.Services;
+using SimpleSQLEditor.Services.EfCore;
 
 namespace SimpleSQLEditor
 {
@@ -28,13 +29,27 @@ namespace SimpleSQLEditor
 
         private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
         {
+            // WPF Einstiegspunkt & Root ViewModel
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
-            services.AddSingleton<SqlServerAdminService>();
+
+            // UI-nahe Services (Fenster, Dialoge)
             services.AddSingleton<IWindowService, WindowService>();
             services.AddSingleton<IDialogService, DialogService>();
+
+            // SQL Server – native Administration (reines SQL)
+            services.AddSingleton<SqlServerAdminService>();
             services.AddSingleton<IColumnDefinitionService, ColumnDefinitionService>();
 
+            // Entity Framework Core – Laufzeit-DbContext (Lernpfad)
+            services.AddSingleton<IEfRuntimeContextFactory, EfRuntimeContextFactory>();
+            services.AddSingleton<IEfDatabaseQueryService, EfDatabaseQueryService>();
+
+            // Use-Case Routing – Datenbankkatalog (SQL oder EF)
+            //services.AddSingleton<IDatabaseCatalogService, SqlDatabaseCatalogService>();
+            services.AddSingleton<IDatabaseCatalogService, EfDatabaseCatalogService>();
+
+            // Zusätzliche Windows (per Service geöffnet)
             services.AddTransient<Views.StatusLogWindow>();
             services.AddTransient<Views.TableDataWindow>();
             services.AddTransient<Views.SqlDataTypesWindow>();

@@ -9,7 +9,7 @@ namespace SimpleSQLEditor.Services
     {
         #region Fields
 
-        private const int DefaultCommandTimeoutSeconds = 30;
+        private const int DEFAULT_COMMAND_TIMEOUT_SECONDS = 30;
 
         #endregion
 
@@ -17,7 +17,7 @@ namespace SimpleSQLEditor.Services
 
         public async Task TestConnectionAsync(string connectionString)
         {
-            var masterConnectionString = BuildMasterConnectionString(connectionString);
+            var masterConnectionString = BuildConnectionString(connectionString);
 
             await using var connection = new SqlConnection(masterConnectionString);
             await connection.OpenAsync();
@@ -25,7 +25,7 @@ namespace SimpleSQLEditor.Services
 
         public async Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
         {
-            var masterConnectionString = BuildMasterConnectionString(connectionString);
+            var masterConnectionString = BuildConnectionString(connectionString);
 
             const string sql = @"
 SELECT [name]
@@ -40,7 +40,7 @@ ORDER BY [name];";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -56,7 +56,7 @@ ORDER BY [name];";
         {
             EnsureSafeIdentifier(databaseName);
 
-            var masterConnectionString = BuildMasterConnectionString(connectionString);
+            var masterConnectionString = BuildConnectionString(connectionString);
 
             var sql = $@"
 IF DB_ID(N'{databaseName}') IS NULL
@@ -76,7 +76,7 @@ END";
         {
             EnsureSafeIdentifier(databaseName);
 
-            var masterConnectionString = BuildMasterConnectionString(connectionString);
+            var masterConnectionString = BuildConnectionString(connectionString);
 
             var sql = $@"
 IF DB_ID(N'{databaseName}') IS NOT NULL
@@ -97,7 +97,7 @@ END";
         {
             EnsureSafeIdentifier(databaseName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             const string sql = @"
 SELECT [name]
@@ -111,7 +111,7 @@ ORDER BY [name];";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
             await using var reader = await command.ExecuteReaderAsync();
 
@@ -128,7 +128,7 @@ ORDER BY [name];";
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             var sql = $@"
 IF OBJECT_ID(N'dbo.[{tableName}]', N'U') IS NULL
@@ -152,7 +152,7 @@ END";
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             var sql = $@"
 IF OBJECT_ID(N'dbo.[{tableName}]', N'U') IS NOT NULL
@@ -173,7 +173,7 @@ END";
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             const string sql = @"
 SELECT 
@@ -195,7 +195,7 @@ ORDER BY c.column_id;";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
             command.Parameters.AddWithValue("@TableName", tableName);
 
@@ -220,7 +220,7 @@ ORDER BY c.column_id;";
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             const string sql = @"
 SELECT c.[name]
@@ -241,7 +241,7 @@ ORDER BY ic.[key_ordinal];";
             EnsureSafeIdentifier(databaseName);
             EnsureSafeIdentifier(tableName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             const string sql = @"
 SELECT DISTINCT pc.[name]
@@ -263,7 +263,7 @@ ORDER BY pc.[name];";
             EnsureSafeIdentifier(columnName);
             EnsureSafeDataType(dataType);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             var sql = $@"
 IF COL_LENGTH(N'dbo.[{tableName}]', N'{columnName}') IS NULL
@@ -285,7 +285,7 @@ END";
             EnsureSafeIdentifier(tableName);
             EnsureSafeIdentifier(columnName);
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             var sql = $@"
 IF COL_LENGTH(N'dbo.[{tableName}]', N'{columnName}') IS NOT NULL
@@ -309,7 +309,7 @@ END";
             if (maxRows <= 0)
                 throw new ArgumentOutOfRangeException(nameof(maxRows), "Max rows must be greater than 0.");
 
-            var databaseConnectionString = BuildDatabaseConnectionString(connectionString, databaseName);
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
 
             var sql = $@"
 SELECT TOP (@MaxRows) *
@@ -320,7 +320,7 @@ FROM dbo.[{tableName}];";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
 
             command.Parameters.AddWithValue("@MaxRows", maxRows);
@@ -340,7 +340,7 @@ FROM dbo.[{tableName}];";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
 
             var result = await command.ExecuteScalarAsync();
@@ -357,7 +357,7 @@ FROM dbo.[{tableName}];";
 
             await using var command = new SqlCommand(sql, connection)
             {
-                CommandTimeout = DefaultCommandTimeoutSeconds
+                CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS
             };
             command.Parameters.AddWithValue("@TableName", tableName);
 
@@ -370,22 +370,14 @@ FROM dbo.[{tableName}];";
             return result;
         }
 
-        private static string BuildDatabaseConnectionString(string connectionString, string databaseName)
-        {
-            var builder = new SqlConnectionStringBuilder(connectionString)
-            {
-                InitialCatalog = databaseName,
-                AttachDBFilename = string.Empty
-            };
-
-            return builder.ConnectionString;
-        }
-
-        private static string BuildMasterConnectionString(string connectionString)
+        private static string BuildConnectionString(string connectionString, string? databaseName = null)
         {
             var builder = new SqlConnectionStringBuilder(connectionString);
 
-            builder.InitialCatalog = "master";
+            builder.InitialCatalog = string.IsNullOrWhiteSpace(databaseName)
+                ? "master"
+                : databaseName;
+
             builder.AttachDBFilename = string.Empty;
 
             return builder.ConnectionString;

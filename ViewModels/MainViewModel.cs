@@ -22,11 +22,13 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IColumnDefinitionService _columnDefinitionService;
 
+        private readonly IDatabaseCatalogService _databaseCatalogService;
+
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _isAutoLoading;
 
-        private const int StatusStepDelayMs = 500;
+        private const int STATUS_STEP_DELAY_MS = 500;
 
         #endregion
 
@@ -72,13 +74,20 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public MainViewModel(SqlServerAdminService sqlAdminService, IConfiguration configuration, IWindowService windowService, IDialogService dialogService, IColumnDefinitionService columnDefinitionService)
+        public MainViewModel(
+            SqlServerAdminService sqlAdminService,
+            IConfiguration configuration,
+            IWindowService windowService,
+            IDialogService dialogService,
+            IColumnDefinitionService columnDefinitionService,
+            IDatabaseCatalogService databaseCatalogService)
         {
             _sqlAdminService = sqlAdminService;
             _configuration = configuration;
             _windowService = windowService;
             _dialogService = dialogService;
             _columnDefinitionService = columnDefinitionService;
+            _databaseCatalogService = databaseCatalogService;
 
             ConnectionString = _configuration.GetConnectionString("SqlServer") ?? string.Empty;
 
@@ -129,7 +138,7 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading databases...");
 
-                var databases = await _sqlAdminService.GetDatabasesAsync(ConnectionString);
+                var databases = await _databaseCatalogService.GetDatabasesAsync(ConnectionString);
 
                 Databases.Clear();
 
@@ -497,9 +506,7 @@ namespace SimpleSQLEditor.ViewModels
             });
 
             if (withDelay)
-            {
-                await Task.Delay(StatusStepDelayMs);
-            }
+                await Task.Delay(STATUS_STEP_DELAY_MS);
         }
 
         private static bool TryParseColumnDisplay(string input, out string columnName, out string? dataType)
@@ -627,37 +634,3 @@ namespace SimpleSQLEditor.ViewModels
         #endregion
     }
 }
-
-#region TODO – Roadmap / Lernziele
-
-// TODO: Column Constraints
-// - Allow setting NULL / NOT NULL on column creation
-// - Show NULL / NOT NULL status in column display
-// - Change NULLability of existing columns (ALTER TABLE)
-
-// TODO: Primary Keys
-// - Display PK columns (done read-only in v0.7.7)
-// - Allow setting PK on column creation
-// - Allow removing / changing PK (single vs. composite keys)
-// - Handle identity vs. non-identity PKs
-
-// TODO: Foreign Keys
-// - Display FK relationships (done read-only in v0.7.7)
-// - Add FK to existing column
-// - Select referenced table and column
-// - Configure ON DELETE / ON UPDATE behavior
-
-// TODO: Table Data (EF Core)
-// - Insert new rows (Create)
-// - Edit existing rows (Update)
-// - Delete rows
-// - Handle validation errors
-// - Understand EF Change Tracking
-
-// TODO: EF Core Integration
-// - Introduce DbContext (no Code-First, no migrations)
-// - Dynamic table access without fixed entities
-// - Compare raw SQL vs EF queries
-// - Observe generated SQL
-
-#endregion
