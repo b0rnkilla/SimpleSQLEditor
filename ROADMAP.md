@@ -11,10 +11,10 @@ und vergleichen zu können (kein Blindflug).
 ### v0.7.8 – PK / FK Anzeige (read-only)
 Ziel: Tabellen-Schema besser verstehen
 
-- [ ] Primary Key (PK) Spalten anzeigen
-- [ ] Foreign Key (FK) Spalten anzeigen
-- [ ] Anzeige in der Columns-Liste (z.B. `[PK]`, `[FK]`)
-- [ ] Keine Bearbeitung, nur Lesen
+- [x] Primary Key (PK) Spalten anzeigen
+- [x] Foreign Key (FK) Spalten anzeigen
+- [x] Anzeige in der Columns-Liste (z.B. `[PK]`, `[FK]`)
+- [x] Keine Bearbeitung, nur Lesen
 
 ---
 

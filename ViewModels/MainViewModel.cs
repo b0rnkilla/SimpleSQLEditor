@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using SimpleSQLEditor.Infrastructure;
 using SimpleSQLEditor.Services;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 
 namespace SimpleSQLEditor.ViewModels
 {
@@ -314,6 +315,9 @@ namespace SimpleSQLEditor.ViewModels
 
                 var map = await _sqlAdminService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
 
+                var pkColumns = await _sqlAdminService.GetPrimaryKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
+                var fkColumns = await _sqlAdminService.GetForeignKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
+
                 _columnDataTypes.Clear();
                 foreach (var kvp in map)
                 {
@@ -323,7 +327,13 @@ namespace SimpleSQLEditor.ViewModels
                 Columns.Clear();
                 foreach (var kvp in _columnDataTypes)
                 {
-                    Columns.Add($"{kvp.Key} ({kvp.Value})");
+                    var columnName = kvp.Key;
+                    var dataType = kvp.Value;
+
+                    var pkTag = pkColumns.Contains(columnName) ? " [PK]" : string.Empty;
+                    var fkTag = fkColumns.Contains(columnName) ? " [FK]" : string.Empty;
+
+                    Columns.Add($"{columnName} ({dataType}){pkTag}{fkTag}");
                 }
 
                 await SetStatusAsync(StatusLevel.Info, $"Loaded {Columns.Count} columns.");
@@ -500,7 +510,7 @@ namespace SimpleSQLEditor.ViewModels
             if (string.IsNullOrWhiteSpace(input))
                 return false;
 
-            input = input.Trim();
+            input = Regex.Replace(input, @"\s+\[(PK|FK)\]\s*", string.Empty, RegexOptions.IgnoreCase).Trim();
 
             var openIndex = input.IndexOf('(');
             var closeIndex = input.LastIndexOf(')');

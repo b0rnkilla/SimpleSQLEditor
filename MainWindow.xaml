@@ -245,8 +245,8 @@
                                     </Style>
                                 </Button.Style>
                             </Button>
-                            <Button Width="90" Margin="0,0,6,0" Content="+ Add PK"/>
-                            <Button Width="90" Content="+ Add FK"/>
+                            <Button Width="90" Margin="0,0,6,0" Content="+ Add PK" IsEnabled="False"/>
+                            <Button Width="90" Content="+ Add FK" IsEnabled="False"/>
                         </StackPanel>
                     </StackPanel>
                 </GroupBox>
