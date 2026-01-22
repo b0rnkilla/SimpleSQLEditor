@@ -1,9 +1,11 @@
-﻿namespace SimpleSQLEditor.Services
+﻿using SimpleSQLEditor.Infrastructure;
+
+namespace SimpleSQLEditor.Services
 {
     public interface IDatabaseCatalogService
     {
         string ProviderName { get; }
 
-        Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString);
+        Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString);
     }
 }

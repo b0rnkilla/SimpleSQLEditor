@@ -33,11 +33,14 @@ Ziel: EF Core technisch einführen
 #### v0.8.1 – SQL/EF Umschaltung vorbereiten (Architektur)
 Ziel: Vergleichbar und verständlich zwischen SQL und EF umschalten können
 
-- [ ] Globalen Modus einführen: `DataAccessMode = Sql | Ef`
-- [ ] Fassade einführen: `IDataAccessService` (Start: Datenbanken)
-- [ ] EF kann bewusst an SQL delegieren; Log zeigt `EF->SQL`
-- [ ] UI-Switch vor Connect (Modus auswählbar)
-- [ ] Logging/Status so gestalten, dass Provider pro Operation sichtbar ist
+- [x] Globalen Modus einführen: `DataAccessMode = Sql | Ef`
+- [x] UI-Switch vor Connect (Modus auswählbar)
+- [x] Fassade für Datenbankkatalog eingeführt (Start: Datenbanken)
+- [x] Zentrales Routing SQL / EF für Datenbanklisten
+- [x] Logging/Status zeigt technische Quelle pro Operation (SQL / EF)
+
+Hinweis:
+EF erscheint im Log nur dort, wo EF technisch tatsächlich verwendet wird.
 
 #### v0.8.2 – Tabellen dynamisch mit EF lesen
 Ziel: EF ohne feste Entities verstehen

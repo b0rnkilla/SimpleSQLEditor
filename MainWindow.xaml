@@ -4,20 +4,25 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor"
+        xmlns:infra="clr-namespace:SimpleSQLEditor.Infrastructure"
         mc:Ignorable="d"
         Title="Simple SQL Editor" Height="275" Width="950"
         ResizeMode="NoResize">
+
+    <Window.Resources>
+        <infra:EnumEqualsConverter x:Key="EnumEqualsConverter" />
+    </Window.Resources>
 
     <Grid Margin="12,5,12,12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <!-- #region Status -->
         <GroupBox Margin="0,0,0,8">
             <GroupBox.Header>
-                <TextBlock Text="Status Message:"
+                <TextBlock Text="Status:"
                            FontWeight="Bold"
                            Margin="1,0,1,2" />
             </GroupBox.Header>
@@ -73,24 +78,61 @@
             </Grid>
         </GroupBox>
         <!-- #endregion -->
-        
-        <!-- #region SQL Connection & DB -->
+
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- #region Connection -->
-            <GroupBox Grid.Row="0"
-                      Margin="0,0,0,8">
-                <GroupBox.Header>
-                    <TextBlock Text="Connection String:"
-                               FontWeight="Bold"
-                               Margin="1,0,1,2" />
-                </GroupBox.Header>
+            <!-- #region Data Access Mode & Connection String -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                <Grid>
+                <!-- #region Data Access Mode -->
+                <GroupBox Grid.Column="0" Margin="0,0,8,8">
+                    <GroupBox.Header>
+                        <TextBlock Text="Data Access Mode:"
+                                   FontWeight="Bold"
+                                   Margin="1,0,1,2" />
+                    </GroupBox.Header>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <RadioButton Grid.Column="0"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"
+                                     Content="SQL"
+                                     IsChecked="{Binding SelectedDataAccessMode,
+                                     Converter={StaticResource EnumEqualsConverter},
+                                     ConverterParameter=Sql}" />
+
+                        <RadioButton Grid.Column="1"
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center"
+                                     Content="EF"
+                                     IsChecked="{Binding SelectedDataAccessMode,
+                                     Converter={StaticResource EnumEqualsConverter},
+                                     ConverterParameter=Ef}" />
+                    </Grid>
+                </GroupBox>
+                <!-- #endregion -->
+
+                <!-- #region Connection String -->
+                <GroupBox Grid.Column="1" Margin="0,0,0,8">
+                    <GroupBox.Header>
+                        <TextBlock Text="Connection String:"
+                                   FontWeight="Bold"
+                                   Margin="1,0,1,2" />
+                    </GroupBox.Header>
+
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -105,8 +147,10 @@
                                 Content="⏵ Connect"
                                 Command="{Binding ConnectCommand}" />
                     </Grid>
-                </Grid>
-            </GroupBox>
+                </GroupBox>
+                <!-- #endregion -->
+
+            </Grid>
             <!-- #endregion -->
 
             <!-- #region DB / Tables / Columns -->
@@ -251,12 +295,10 @@
                     </StackPanel>
                 </GroupBox>
                 <!-- #endregion -->
-                
+
             </Grid>
             <!-- #endregion -->
-            
+
         </Grid>
-        <!-- #endregion -->
-        
     </Grid>
 </Window>

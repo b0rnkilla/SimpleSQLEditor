@@ -1,4 +1,5 @@
-﻿using SimpleSQLEditor.Services.EfCore;
+﻿using SimpleSQLEditor.Infrastructure;
+using SimpleSQLEditor.Services.EfCore;
 
 namespace SimpleSQLEditor.Services
 {
@@ -27,9 +28,15 @@ namespace SimpleSQLEditor.Services
 
         #region Methods & Events
 
-        public Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
+        public async Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
-            return _efDatabaseQueryService.GetUserDatabasesAsync(connectionString);
+            var data = await _efDatabaseQueryService.GetUserDatabasesAsync(connectionString);
+
+            return new DataAccessResult<IReadOnlyList<string>>
+            {
+                Provider = ProviderName,
+                Data = data
+            };
         }
 
         #endregion

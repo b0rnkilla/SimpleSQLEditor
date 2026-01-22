@@ -33,6 +33,12 @@ namespace SimpleSQLEditor
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
 
+            // Globaler Datenzugriffsmodus (SQL / EF)
+            services.AddSingleton<IDataAccessModeService, DataAccessModeService>();
+
+            // Status/Logging Kontext – Quelle pro Operation (SQL / EF / EF->SQL)
+            services.AddSingleton<IOperationSourceService, OperationSourceService>();
+
             // UI-nahe Services (Fenster, Dialoge)
             services.AddSingleton<IWindowService, WindowService>();
             services.AddSingleton<IDialogService, DialogService>();
@@ -46,8 +52,9 @@ namespace SimpleSQLEditor
             services.AddSingleton<IEfDatabaseQueryService, EfDatabaseQueryService>();
 
             // Use-Case Routing – Datenbankkatalog (SQL oder EF)
-            //services.AddSingleton<IDatabaseCatalogService, SqlDatabaseCatalogService>();
-            services.AddSingleton<IDatabaseCatalogService, EfDatabaseCatalogService>();
+            services.AddSingleton<SqlDatabaseCatalogService>();
+            services.AddSingleton<EfDatabaseCatalogService>();
+            services.AddSingleton<IDatabaseCatalogService, DatabaseCatalogRouter>();
 
             // Zusätzliche Windows (per Service geöffnet)
             services.AddTransient<Views.StatusLogWindow>();

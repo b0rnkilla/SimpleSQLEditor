@@ -20,9 +20,13 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IDialogService _dialogService;
 
+        private readonly IDataAccessModeService _dataAccessModeService;
+
         private readonly IColumnDefinitionService _columnDefinitionService;
 
         private readonly IDatabaseCatalogService _databaseCatalogService;
+
+        private readonly IOperationSourceService _operationSourceService;
 
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -44,6 +48,9 @@ namespace SimpleSQLEditor.ViewModels
         private StatusLevel _statusLevel = StatusLevel.Info;
 
         public ObservableCollection<StatusEntry> StatusHistory { get; } = new();
+
+        [ObservableProperty]
+        private DataAccessMode _selectedDataAccessMode = DataAccessMode.Sql;
 
         [ObservableProperty]
         private string _connectionString = string.Empty;
@@ -79,15 +86,19 @@ namespace SimpleSQLEditor.ViewModels
             IConfiguration configuration,
             IWindowService windowService,
             IDialogService dialogService,
+            IDataAccessModeService dataAccessModeService,
             IColumnDefinitionService columnDefinitionService,
-            IDatabaseCatalogService databaseCatalogService)
+            IDatabaseCatalogService databaseCatalogService,
+            IOperationSourceService operationSourceService)
         {
             _sqlAdminService = sqlAdminService;
             _configuration = configuration;
             _windowService = windowService;
             _dialogService = dialogService;
+            _dataAccessModeService = dataAccessModeService;
             _columnDefinitionService = columnDefinitionService;
             _databaseCatalogService = databaseCatalogService;
+            _operationSourceService = operationSourceService;
 
             ConnectionString = _configuration.GetConnectionString("SqlServer") ?? string.Empty;
 
@@ -112,6 +123,10 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task ConnectAsync()
         {
+            using var _ = BeginSqlOperation();
+
+            _dataAccessModeService.CurrentMode = SelectedDataAccessMode;
+
             try
             {
                 await SetStatusAsync(StatusLevel.Warning, "Connecting...");
@@ -134,15 +149,17 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadDatabasesAsync()
         {
+            using var _ = BeginDatabaseCatalogOperation();
+
             try
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading databases...");
 
-                var databases = await _databaseCatalogService.GetDatabasesAsync(ConnectionString);
+                var result = await _databaseCatalogService.GetDatabasesAsync(ConnectionString);
 
                 Databases.Clear();
 
-                foreach (var db in databases)
+                foreach (var db in result.Data)
                 {
                     Databases.Add(db);
                 }
@@ -158,6 +175,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task CreateDatabaseAsync()
         {
+            using var _ = BeginSqlOperation();
+
             try
             {
                 await SetStatusAsync(StatusLevel.Info, "Creating database...");
@@ -180,6 +199,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteDatabaseAsync()
         {
+            using var _ = BeginSqlOperation();
+
             var shouldDelete = _dialogService.Confirm(
                 "Confirm delete",
                 $"Do you really want to delete database '{SelectedDatabase}'?");
@@ -214,6 +235,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadTablesAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase))
             {
                 await SetStatusAsync(StatusLevel.Warning, "No database selected.");
@@ -244,6 +267,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task CreateTableAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
                 await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.");
@@ -272,6 +297,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteTableAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
                 await SetStatusAsync(StatusLevel.Warning, "Database or table name missing.");
@@ -312,6 +339,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadColumnsAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
                 await SetStatusAsync(StatusLevel.Warning, "No database or table selected.");
@@ -356,6 +385,8 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task CreateColumnAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable) || string.IsNullOrWhiteSpace(SelectedColumn))
             {
                 await SetStatusAsync(StatusLevel.Error, "Database, table or column definition missing.", withDelay: false);
@@ -390,13 +421,15 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task DeleteColumnAsync()
         {
+            using var _ = BeginSqlOperation();
+
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable) || string.IsNullOrWhiteSpace(SelectedColumn))
             {
                 await SetStatusAsync(StatusLevel.Error, "Database, table or column name missing.", withDelay: false);
                 return;
             }
 
-            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out _) || string.IsNullOrWhiteSpace(columnName))
+            if (!TryParseColumnDisplay(SelectedColumn, out var columnName, out var dataType) || string.IsNullOrWhiteSpace(columnName))
             {
                 await SetStatusAsync(StatusLevel.Error, "Invalid column selection.", withDelay: false);
                 return;
@@ -495,18 +528,32 @@ namespace SimpleSQLEditor.ViewModels
 
         private async Task SetStatusAsync(StatusLevel level, string message, bool withDelay = true)
         {
+            var prefixedMessage = $"[{_operationSourceService.CurrentSource}] {message}";
+
             StatusLevel = level;
-            StatusText = message;
+            StatusText = prefixedMessage;
 
             StatusHistory.Add(new StatusEntry
             {
                 Timestamp = DateTime.Now,
                 Level = level,
-                Message = message
+                Message = prefixedMessage
             });
 
             if (withDelay)
                 await Task.Delay(STATUS_STEP_DELAY_MS);
+        }
+
+        private IDisposable BeginSqlOperation()
+        {
+            return _operationSourceService.Begin("SQL");
+        }
+
+        private IDisposable BeginDatabaseCatalogOperation()
+        {
+            var source = _databaseCatalogService.ProviderName;
+
+            return _operationSourceService.Begin(source);
         }
 
         private static bool TryParseColumnDisplay(string input, out string columnName, out string? dataType)

@@ -1,4 +1,6 @@
-﻿namespace SimpleSQLEditor.Services
+﻿using SimpleSQLEditor.Infrastructure;
+
+namespace SimpleSQLEditor.Services
 {
     public class SqlDatabaseCatalogService : IDatabaseCatalogService
     {
@@ -9,9 +11,9 @@
         #endregion
 
         #region Properties
-        
+
         public string ProviderName => "SQL";
-        
+
         #endregion
 
         #region Constructor
@@ -25,9 +27,15 @@
 
         #region Methods & Events
 
-        public Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
+        public async Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
-            return _sqlServerAdminService.GetDatabasesAsync(connectionString);
+            var data = await _sqlServerAdminService.GetDatabasesAsync(connectionString);
+
+            return new DataAccessResult<IReadOnlyList<string>>
+            {
+                Provider = ProviderName,
+                Data = data
+            };
         }
 
         #endregion
