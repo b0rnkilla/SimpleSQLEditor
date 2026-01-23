@@ -1,6 +1,6 @@
 ﻿using SimpleSQLEditor.Infrastructure;
 
-namespace SimpleSQLEditor.Services
+namespace SimpleSQLEditor.Services.State
 {
     public class DataAccessModeService : IDataAccessModeService
     {

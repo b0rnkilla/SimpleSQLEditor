@@ -47,6 +47,83 @@ WHERE [name] NOT IN ('master', 'model', 'msdb', 'tempdb')";
             return result;
         }
 
+        public async Task<IReadOnlyList<string>> GetTablesAsync(string connectionString, string databaseName)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+                throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
+
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
+
+            await using var context = _contextFactory.Create(databaseConnectionString);
+
+            const string sql = @"
+SELECT [name]
+FROM sys.tables
+ORDER BY [name];";
+
+            var result = await context.Database
+                .SqlQueryRaw<string>(sql)
+                .ToListAsync();
+
+            return result;
+        }
+
+        public async Task<IReadOnlyDictionary<string, string>> GetColumnDataTypesAsync(string connectionString, string databaseName, string tableName)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+                throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
+
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("Table name must not be empty.", nameof(tableName));
+
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
+
+            await using var context = _contextFactory.Create(databaseConnectionString);
+
+            const string sql = @"
+SELECT 
+    c.[name] AS ColumnName,
+    t.[name] AS TypeName,
+    c.max_length,
+    c.[precision],
+    c.[scale]
+FROM sys.columns c
+INNER JOIN sys.tables tb ON tb.[object_id] = c.[object_id]
+INNER JOIN sys.types t ON t.user_type_id = c.user_type_id
+WHERE tb.[name] = @TableName
+ORDER BY c.column_id;";
+
+            var connection = context.Database.GetDbConnection();
+            await EnsureOpenAsync(connection);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS;
+
+            var tableNameParameter = command.CreateParameter();
+            tableNameParameter.ParameterName = "@TableName";
+            tableNameParameter.Value = tableName;
+            command.Parameters.Add(tableNameParameter);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            while (await reader.ReadAsync())
+            {
+                var columnName = reader.GetString(0);
+                var typeName = reader.GetString(1);
+                var maxLength = reader.GetInt16(2);
+                var precision = reader.GetByte(3);
+                var scale = reader.GetByte(4);
+
+                var formattedType = FormatSqlType(typeName, maxLength, precision, scale);
+                result[columnName] = formattedType;
+            }
+
+            return result;
+        }
+
         public async Task<DataTable> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows)
         {
             if (string.IsNullOrWhiteSpace(databaseName))
@@ -106,6 +183,36 @@ FROM dbo.[{tableName}];";
             builder.AttachDBFilename = string.Empty;
 
             return builder.ConnectionString;
+        }
+
+        private static string FormatSqlType(string typeName, short maxLength, byte precision, byte scale)
+        {
+            if (typeName.Equals("nvarchar", StringComparison.OrdinalIgnoreCase) ||
+                typeName.Equals("nchar", StringComparison.OrdinalIgnoreCase))
+            {
+                if (maxLength == -1)
+                    return $"{typeName}(max)";
+
+                var chars = maxLength / 2;
+                return $"{typeName}({chars})";
+            }
+
+            if (typeName.Equals("varchar", StringComparison.OrdinalIgnoreCase) ||
+                typeName.Equals("char", StringComparison.OrdinalIgnoreCase))
+            {
+                if (maxLength == -1)
+                    return $"{typeName}(max)";
+
+                return $"{typeName}({maxLength})";
+            }
+
+            if (typeName.Equals("decimal", StringComparison.OrdinalIgnoreCase) ||
+                typeName.Equals("numeric", StringComparison.OrdinalIgnoreCase))
+            {
+                return $"{typeName}({precision},{scale})";
+            }
+
+            return typeName;
         }
 
         #endregion

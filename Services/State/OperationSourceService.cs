@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleSQLEditor.Services
+namespace SimpleSQLEditor.Services.State
 {
     public class OperationSourceService : IOperationSourceService
     {

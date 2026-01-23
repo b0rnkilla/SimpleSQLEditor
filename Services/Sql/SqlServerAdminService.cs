@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using SimpleSQLEditor.Infrastructure;
 using System.Data;
 
-namespace SimpleSQLEditor.Services
+namespace SimpleSQLEditor.Services.Sql
 {
     public class SqlServerAdminService
     {

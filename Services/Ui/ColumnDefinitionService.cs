@@ -1,4 +1,4 @@
-﻿namespace SimpleSQLEditor.Services
+﻿namespace SimpleSQLEditor.Services.Ui
 {
     public class ColumnDefinitionService : IColumnDefinitionService
     {

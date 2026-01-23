@@ -1,5 +1,9 @@
 ﻿# SimpleSQLEditor
 
+<p align="center">
+	<img src="docs/title_image.png" alt="SimpleSQLEditor" width="400">
+</p>
+
 **SimpleSQLEditor** ist ein bewusst schlank gehaltenes Lern- und Referenzprojekt zur Arbeit mit  
 **SQL Server**, **WPF (MVVM)** und **Entity Framework Core**.
 
@@ -39,6 +43,9 @@ Das Tool dient gleichzeitig als:
 - Fensterkommunikation erfolgt ausschließlich über Services
 - SQL-Admin-Funktionen sind klar vom EF-Bereich getrennt
 - UI-Zustände werden explizit modelliert (Busy, Error, Status)
+- Datenzugriff erfolgt über einen zentralen DataAccess-Service
+- SQL- und EF-Implementierungen werden zur Laufzeit geroutet
+- Der aktive Zugriffspfad (SQL oder EF) ist im Status- und Log-System sichtbar
 
 ---
 
@@ -69,6 +76,9 @@ Das Tool dient gleichzeitig als:
 - Kopierfunktion (ContextMenu / Strg+C)
 - Unterstützung beim Definieren von Spalten
 
+Hinweis: Teile der Leseoperationen sind bereits alternativ über EF Core implementiert
+und können per Moduswahl im UI verglichen werden.
+
 ---
 
 ## Entity Framework Core – bewusst integriert
@@ -85,6 +95,14 @@ Entity Framework Core wird **nicht als Ersatz**, sondern **als Lerngegenstück**
 - Change Tracking verstehen
 
 EF-Funktionalität wird parallel zu bestehendem SQL-Code aufgebaut, um Unterschiede klar zu sehen.
+EF Core wird dabei nicht als vollständig gleichwertiger Ersatz betrachtet.
+Einzelne Funktionen können bewusst:
+- nur über SQL verfügbar sein
+- oder intern auf SQL zurückfallen
+
+Das ist gewollt und dient dem Vergleich:
+Welche Anwendungsfälle eignen sich für EF –
+und wo bleibt SQL transparenter oder einfacher?
 
 ---
 

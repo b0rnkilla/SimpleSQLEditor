@@ -1,4 +1,4 @@
-﻿namespace SimpleSQLEditor.Services
+﻿namespace SimpleSQLEditor.Services.State
 {
     public interface IOperationSourceService
     {

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
-namespace SimpleSQLEditor.Services
+namespace SimpleSQLEditor.Services.Ui
 {
     public class WindowService : IWindowService
     {

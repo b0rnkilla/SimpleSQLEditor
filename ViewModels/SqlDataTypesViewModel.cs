@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimpleSQLEditor.Infrastructure;
-using SimpleSQLEditor.Services;
+using SimpleSQLEditor.Services.Ui;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;

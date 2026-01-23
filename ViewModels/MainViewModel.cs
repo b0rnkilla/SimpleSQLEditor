@@ -2,7 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Configuration;
 using SimpleSQLEditor.Infrastructure;
-using SimpleSQLEditor.Services;
+using SimpleSQLEditor.Services.DataAccess;
+using SimpleSQLEditor.Services.Sql;
+using SimpleSQLEditor.Services.State;
+using SimpleSQLEditor.Services.Ui;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 
@@ -26,7 +29,7 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IColumnDefinitionService _columnDefinitionService;
 
-        private readonly IDatabaseCatalogService _databaseCatalogService;
+        private readonly IDataAccessService _dataAccessService;
 
         private readonly IOperationSourceService _operationSourceService;
 
@@ -36,7 +39,7 @@ namespace SimpleSQLEditor.ViewModels
 
         private bool _isTableDataEventsSubscribed;
 
-        private const int STATUS_STEP_DELAY_MS = 500;
+        private const int STATUS_STEP_DELAY_MS = 350;
 
         #endregion
 
@@ -93,7 +96,7 @@ namespace SimpleSQLEditor.ViewModels
             IDialogService dialogService,
             IDataAccessModeService dataAccessModeService,
             IColumnDefinitionService columnDefinitionService,
-            IDatabaseCatalogService databaseCatalogService,
+            IDataAccessService dataAccessService,
             IOperationSourceService operationSourceService)
         {
             _sqlAdminService = sqlAdminService;
@@ -103,7 +106,7 @@ namespace SimpleSQLEditor.ViewModels
             _dialogService = dialogService;
             _dataAccessModeService = dataAccessModeService;
             _columnDefinitionService = columnDefinitionService;
-            _databaseCatalogService = databaseCatalogService;
+            _dataAccessService = dataAccessService;
             _operationSourceService = operationSourceService;
 
             ConnectionString = _configuration.GetConnectionString("SqlServer") ?? string.Empty;
@@ -155,13 +158,13 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadDatabasesAsync()
         {
-            using var _ = BeginDatabaseCatalogOperation();
+            using var __ = BeginRoutedOperation();
 
             try
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading databases...");
 
-                var result = await _databaseCatalogService.GetDatabasesAsync(ConnectionString);
+                var result = await _dataAccessService.GetDatabasesAsync(ConnectionString);
 
                 Databases.Clear();
 
@@ -241,7 +244,7 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadTablesAsync()
         {
-            using var _ = BeginSqlOperation();
+            using var __ = BeginRoutedOperation();
 
             if (string.IsNullOrWhiteSpace(SelectedDatabase))
             {
@@ -253,7 +256,8 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading tables...");
 
-                var tables = await _sqlAdminService.GetTablesAsync( ConnectionString, SelectedDatabase);
+                var result = await _dataAccessService.GetTablesAsync(ConnectionString, SelectedDatabase);
+                var tables = result.Data;
 
                 Tables.Clear();
 
@@ -345,7 +349,7 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task LoadColumnsAsync()
         {
-            using var _ = BeginSqlOperation();
+            using var __ = BeginRoutedOperation();
 
             if (string.IsNullOrWhiteSpace(SelectedDatabase) || string.IsNullOrWhiteSpace(SelectedTable))
             {
@@ -357,7 +361,8 @@ namespace SimpleSQLEditor.ViewModels
             {
                 await SetStatusAsync(StatusLevel.Info, "Loading columns...");
 
-                var map = await _sqlAdminService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
+                var result = await _dataAccessService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
+                var map = result.Data;
 
                 var pkColumns = await _sqlAdminService.GetPrimaryKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
                 var fkColumns = await _sqlAdminService.GetForeignKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
@@ -515,7 +520,7 @@ namespace SimpleSQLEditor.ViewModels
             }
             catch (Exception ex)
             {
-                using var __ = BeginTableDataOperation();
+                using var __ = BeginRoutedOperation();
                 await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
@@ -557,20 +562,9 @@ namespace SimpleSQLEditor.ViewModels
             return _operationSourceService.Begin("SQL");
         }
 
-        private IDisposable BeginTableDataOperation()
+        private IDisposable BeginRoutedOperation()
         {
-            var source = _dataAccessModeService.CurrentMode == DataAccessMode.Ef
-                ? "EF"
-                : "SQL";
-
-            return _operationSourceService.Begin(source);
-        }
-
-        private IDisposable BeginDatabaseCatalogOperation()
-        {
-            var source = _databaseCatalogService.ProviderName;
-
-            return _operationSourceService.Begin(source);
+            return _operationSourceService.Begin(_dataAccessService.ProviderName);
         }
 
         private static bool TryParseColumnDisplay(string input, out string columnName, out string? dataType)
@@ -665,19 +659,19 @@ namespace SimpleSQLEditor.ViewModels
 
             _tableDataViewModel.LoadingStarted += async (_, _) =>
             {
-                using var __ = BeginTableDataOperation();
+                using var __ = BeginRoutedOperation();
                 await SetStatusAsync(StatusLevel.Info, "Loading rows...");
             };
 
             _tableDataViewModel.RowsLoaded += async (_, rowCount) =>
             {
-                using var __ = BeginTableDataOperation();
+                using var __ = BeginRoutedOperation();
                 await SetStatusAsync(StatusLevel.Info, $"Loaded {rowCount} rows.");
             };
 
             _tableDataViewModel.LoadingFailed += async (_, errorMessage) =>
             {
-                using var __ = BeginTableDataOperation();
+                using var __ = BeginRoutedOperation();
                 await SetStatusAsync(StatusLevel.Error, $"Error: {errorMessage}", withDelay: false);
             };
 
@@ -697,10 +691,7 @@ namespace SimpleSQLEditor.ViewModels
             }
             catch (Exception ex)
             {
-                await SetStatusAsync(
-                    StatusLevel.Error,
-                    $"Background error: {ex.Message}",
-                    withDelay: false);
+                await SetStatusAsync(StatusLevel.Error, $"Background error: {ex.Message}", withDelay: false);
             }
         }
 

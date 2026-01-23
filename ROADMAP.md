@@ -38,30 +38,46 @@ Ziel: Vergleichbar und verständlich zwischen SQL und EF umschalten können
 - [x] Fassade für Datenbankkatalog eingeführt (Start: Datenbanken)
 - [x] Zentrales Routing SQL / EF für Datenbanklisten
 - [x] Logging/Status zeigt technische Quelle pro Operation (SQL / EF)
+      (Quelle wird dynamisch pro Operation bestimmt, nicht global)
 
 Hinweis:
 EF erscheint im Log nur dort, wo EF technisch tatsächlich verwendet wird.
 
-#### v0.8.2 – Tabellen dynamisch mit EF lesen
-Ziel: EF ohne feste Entities verstehen
+#### v0.8.2 – Provider-Logging und TableData-Statusmeldungen
+Ziel: Provider pro Operation sichtbar machen und TableData in den Log integrieren
 
-- [x] Tabellen ohne feste Entity-Klassen lesen
-- [x] Nutzung von Raw SQL für Tabelleninhalte
-- [x] Status-Logging für Zeilenladen inkl. Reload
-- [x] Vergleichbares Verhalten SQL vs. EF im UI
+- [x] Logging/Status um Provider-Präfix erweitern (OperationSource-Kontext)
+- [x] Begin-Scopes für Operationen einführen (SQL vs. geroutet)
+- [x] TableData: Statusmeldungen „Loading rows…“ / „Loaded X rows.“ ergänzen
+- [x] DataAccess Mode UI (SQL/EF) vor Connect verfügbar
 
-#### v0.8.3 – Tabellen & Spalten dynamisch mit EF lesen
-Ziel: EF-Read-Features für Katalogdaten vervollständigen (ohne Entities)
+Hinweis:
+Diese Version enthält bewusst umfangreiche Architektur- und Struktur-Refactorings zur Vorbereitung weiterer EF-Lernschritte.
 
-- [ ] Tabellenliste per EF lesen (sys.tables)
-- [ ] Spalten + Datentypen per EF lesen (sys.columns / sys.types)
-- [ ] Vergleich SQL vs. EF im selben UI-Flow (Mode Switch)
+#### v0.8.3 – Zentrale DataAccess-Fassade + EF-Read (Databases/Tables/Columns/TableData)
+Ziel: Read-Operationen zwischen SQL und EF im selben UI-Flow vergleichbar machen (ohne Entities)
+
+- [x] Zentrale Fassade einführen: IDataAccessService (Read-UseCases)
+- [x] Zentraler Router: DataAccessRouterService (Mode-basiert)
+- [x] SQL-Implementierung über SqlDataAccessService angebunden
+- [x] EF-Implementierung über EfDataAccessService/EfDatabaseAdminService angebunden
+- [x] Datenbankenliste per EF lesen (sys.databases)
+- [x] Tabellenliste per EF lesen (sys.tables)
+- [x] Spalten + Datentypen per EF lesen (sys.columns / sys.types)
+- [x] TableData (Rows) per EF lesen (ohne Entities)
+- [x] Services-Ordner strukturiert: DataAccess, Sql, EfCore, State, Ui
+- [x] ViewModels: Read-Pfade auf IDataAccessService umgestellt (Main + TableData)
+- [x] Logging vereinheitlicht: BeginSqlOperation und BeginRoutedOperation
+
+Hinweis:
+Diese Version enthält bewusst umfangreiche Architektur- und Struktur-Refactorings zur Vorbereitung weiterer EF-Lernschritte.
 
 #### v0.8.4 – PK/FK Read per EF
-Ziel: Keys auch im EF-Read-Pfad sichtbar machen
+Ziel: Keys auch im EF-Read-Pfad sichtbar machen (Schema-Vergleich vervollständigen)
 
 - [ ] Primary Key Spalten per EF lesen
 - [ ] Foreign Key Spalten per EF lesen
+- [ ] Anzeige der Tags [PK]/[FK] weiterhin identisch im Columns-UI (SQL vs. EF)
 
 ---
 

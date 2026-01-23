@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using SimpleSQLEditor.Services;
 using SimpleSQLEditor.Infrastructure;
-using SimpleSQLEditor.Services.EfCore;
+using SimpleSQLEditor.Services.DataAccess;
 using System.Data;
 
 namespace SimpleSQLEditor.ViewModels
@@ -11,11 +11,7 @@ namespace SimpleSQLEditor.ViewModels
     {
         #region Fields
 
-        private readonly SqlServerAdminService _sqlAdminService;
-
-        private readonly EfDatabaseAdminService _efDatabaseAdminService;
-
-        private readonly IDataAccessModeService _dataAccessModeService;
+        private readonly IDataAccessService _dataAccessService;
 
         #endregion
 
@@ -54,14 +50,9 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public TableDataViewModel(
-            SqlServerAdminService sqlAdminService,
-            EfDatabaseAdminService efDatabaseAdminService,
-            IDataAccessModeService dataAccessModeService)
+        public TableDataViewModel(IDataAccessService dataAccessService)
         {
-            _sqlAdminService = sqlAdminService;
-            _efDatabaseAdminService = efDatabaseAdminService;
-            _dataAccessModeService = dataAccessModeService;
+            _dataAccessService = dataAccessService;
 
             _connectionString = string.Empty;
             _databaseName = string.Empty;
@@ -109,11 +100,9 @@ namespace SimpleSQLEditor.ViewModels
                 ErrorText = null;
                 OnPropertyChanged(nameof(HasError));
 
-                var dataTable = _dataAccessModeService.CurrentMode == DataAccessMode.Ef
-                    ? await _efDatabaseAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows)
-                    : await _sqlAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
+                var result = await _dataAccessService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
 
-                TableData = dataTable.DefaultView;
+                TableData = result.Data.DefaultView;
                 RowsLoaded?.Invoke(this, TableData?.Count ?? 0);
 
             }

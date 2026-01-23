@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace SimpleSQLEditor.Services
+namespace SimpleSQLEditor.Services.Ui
 {
     public class DialogService : IDialogService
     {

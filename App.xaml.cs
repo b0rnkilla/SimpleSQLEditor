@@ -1,8 +1,11 @@
 ﻿using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using SimpleSQLEditor.Services;
+using SimpleSQLEditor.Services.DataAccess;
 using SimpleSQLEditor.Services.EfCore;
+using SimpleSQLEditor.Services.Sql;
+using SimpleSQLEditor.Services.State;
+using SimpleSQLEditor.Services.Ui;
 
 namespace SimpleSQLEditor
 {
@@ -29,34 +32,31 @@ namespace SimpleSQLEditor
 
         private static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
         {
-            // WPF Einstiegspunkt & Root ViewModel
+            // WPF Einstiegspunkt & Root ViewModels
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
             services.AddTransient<ViewModels.TableDataViewModel>();
 
-            // Globaler Datenzugriffsmodus (SQL / EF)
+            // State (Modus, Logging-Kontext)
             services.AddSingleton<IDataAccessModeService, DataAccessModeService>();
-
-            // Status/Logging Kontext – Quelle pro Operation (SQL / EF / EF->SQL)
             services.AddSingleton<IOperationSourceService, OperationSourceService>();
 
-            // UI-nahe Services (Fenster, Dialoge)
+            // DataAccess Fassade & Routing
+            services.AddSingleton<SqlDataAccessService>();
+            services.AddSingleton<EfDataAccessService>();
+            services.AddSingleton<IDataAccessService, DataAccessRouterService>();
+
+            // UI Services (Fenster, Dialoge, UI-Events)
             services.AddSingleton<IWindowService, WindowService>();
             services.AddSingleton<IDialogService, DialogService>();
-
-            // SQL Server – native Administration (reines SQL)
-            services.AddSingleton<SqlServerAdminService>();
             services.AddSingleton<IColumnDefinitionService, ColumnDefinitionService>();
 
-            // Entity Framework Core – Laufzeit-DbContext (Lernpfad)
+            // SQL Implementierung
+            services.AddSingleton<SqlServerAdminService>();
+
+            // EF Core Implementierung
             services.AddSingleton<IEfRuntimeContextFactory, EfRuntimeContextFactory>();
             services.AddSingleton<EfDatabaseAdminService>();
-            //services.AddSingleton<IEfDatabaseQueryService, EfDatabaseQueryService>();
-
-            // Use-Case Routing – Datenbankkatalog (SQL oder EF)
-            services.AddSingleton<SqlDatabaseCatalogService>();
-            services.AddSingleton<EfDatabaseCatalogService>();
-            services.AddSingleton<IDatabaseCatalogService, DatabaseCatalogRouter>();
 
             // Zusätzliche Windows (per Service geöffnet)
             services.AddTransient<Views.StatusLogWindow>();
