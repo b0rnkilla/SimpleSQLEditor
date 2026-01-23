@@ -40,6 +40,11 @@ namespace SimpleSQLEditor.Services.DataAccess
 
         #region Methods & Events
 
+        public Task<DataAccessResult<bool>> TestConnectionAsync(string connectionString)
+        {
+            return GetActiveService().TestConnectionAsync(connectionString);
+        }
+
         public Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
             return GetActiveService().GetDatabasesAsync(connectionString);

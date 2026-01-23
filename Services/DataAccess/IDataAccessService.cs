@@ -7,6 +7,8 @@ namespace SimpleSQLEditor.Services.DataAccess
     {
         string ProviderName { get; }
 
+        Task<DataAccessResult<bool>> TestConnectionAsync(string connectionString);
+
         Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString);
 
         Task<DataAccessResult<IReadOnlyList<string>>> GetTablesAsync(string connectionString, string databaseName);

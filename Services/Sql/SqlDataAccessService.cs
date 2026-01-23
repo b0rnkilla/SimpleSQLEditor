@@ -29,6 +29,17 @@ namespace SimpleSQLEditor.Services.Sql
 
         #region Methods & Events
 
+        public async Task<DataAccessResult<bool>> TestConnectionAsync(string connectionString)
+        {
+            await _sqlServerAdminService.TestConnectionAsync(connectionString);
+
+            return new DataAccessResult<bool>
+            {
+                Provider = ProviderName,
+                Data = true
+            };
+        }
+
         public async Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
             var data = await _sqlServerAdminService.GetDatabasesAsync(connectionString);

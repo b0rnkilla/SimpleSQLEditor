@@ -29,6 +29,17 @@ namespace SimpleSQLEditor.Services.EfCore
 
         #region Methods & Events
 
+        public async Task<DataAccessResult<bool>> TestConnectionAsync(string connectionString)
+        {
+            var data = await _efDatabaseAdminService.TestConnectionAsync(connectionString);
+
+            return new DataAccessResult<bool>
+            {
+                Provider = ProviderName,
+                Data = data
+            };
+        }
+
         public async Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
             var data = await _efDatabaseAdminService.GetDatabasesAsync(connectionString);

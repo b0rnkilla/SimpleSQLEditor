@@ -15,6 +15,17 @@ namespace SimpleSQLEditor.Services.EfCore
 
         #region Methods & Events
 
+        public async Task<bool> TestConnectionAsync(string connectionString)
+        {
+            var masterConnectionString = BuildConnectionString(connectionString);
+            await using var context = CreateContext(masterConnectionString);
+
+            await context.Database.OpenConnectionAsync();
+            await context.Database.CloseConnectionAsync();
+
+            return true;
+        }
+
         public async Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
         {
             var masterConnectionString = BuildConnectionString(connectionString);

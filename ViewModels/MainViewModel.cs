@@ -132,15 +132,15 @@ namespace SimpleSQLEditor.ViewModels
         [RelayCommand]
         private async Task ConnectAsync()
         {
-            using var _ = BeginSqlOperation();
-
             _dataAccessModeService.CurrentMode = SelectedDataAccessMode;
+
+            using var __ = BeginRoutedOperation();
 
             try
             {
                 await SetStatusAsync(StatusLevel.Warning, "Connecting...");
 
-                await _sqlAdminService.TestConnectionAsync(ConnectionString);
+                await _dataAccessService.TestConnectionAsync(ConnectionString);
 
                 IsConnected = true;
 

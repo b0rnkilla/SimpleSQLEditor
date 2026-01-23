@@ -92,14 +92,14 @@ Ziel: Klarere Vergleichbarkeit zwischen SQL- und EF-Pfaden vor v0.9.x
 #### v0.8.6 – TestConnection über gerouteten DataAccess-Pfad
 Ziel: Verbindungstest bewusst zwischen SQL und EF vergleichen
 
-- [ ] Neuen Read-/Infra-UseCase einführen: TestConnection
-- [ ] TestConnection in IDataAccessService aufnehmen
-- [ ] Routing SQL / EF über DataAccessRouterService
-- [ ] SQL-Implementierung: SqlConnection.OpenAsync (bestehendes Verhalten)
-- [ ] EF-Implementierung: DbContext.Database.CanConnectAsync oder OpenConnectionAsync
-- [ ] Status-/Log-Ausgabe zeigt verwendeten Provider (SQL / EF)
-- [ ] Connect-Command nutzt den gerouteten TestConnection-Pfad
-- [ ] Vergleich: Was macht EF beim „Connect“, was nicht?
+- [x] Neuen Read-/Infra-UseCase einführen: TestConnection
+- [x] TestConnection in IDataAccessService aufnehmen
+- [x] Routing SQL / EF über DataAccessRouterService
+- [x] SQL-Implementierung: SqlConnection.OpenAsync (bestehendes Verhalten)
+- [x] EF-Implementierung: OpenConnectionAsync / CloseConnectionAsync
+- [x] Status-/Log-Ausgabe zeigt verwendeten Provider (SQL / EF)
+- [x] Connect-Command nutzt den gerouteten TestConnection-Pfad
+- [x] Vergleich: Was macht EF beim „Connect“, was nicht?
 
 ---
 
