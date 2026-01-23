@@ -1,11 +1,11 @@
-﻿using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleSQLEditor.Services.DataAccess;
 using SimpleSQLEditor.Services.EfCore;
 using SimpleSQLEditor.Services.Sql;
 using SimpleSQLEditor.Services.State;
 using SimpleSQLEditor.Services.Ui;
+using System.Windows;
 
 namespace SimpleSQLEditor
 {
@@ -55,7 +55,6 @@ namespace SimpleSQLEditor
             services.AddSingleton<SqlServerAdminService>();
 
             // EF Core Implementierung
-            services.AddSingleton<IEfRuntimeContextFactory, EfRuntimeContextFactory>();
             services.AddSingleton<EfDatabaseAdminService>();
 
             // Zusätzliche Windows (per Service geöffnet)

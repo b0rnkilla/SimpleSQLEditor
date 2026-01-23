@@ -35,4 +35,9 @@ namespace SimpleSQLEditor.Services.EfCore
 
         #endregion
     }
+
+    public class DatabaseNameRow
+    {
+        public string Name { get; set; } = string.Empty;
+    }
 }

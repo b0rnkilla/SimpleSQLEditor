@@ -75,9 +75,31 @@ Diese Version enthält bewusst umfangreiche Architektur- und Struktur-Refactorin
 #### v0.8.4 – PK/FK Read per EF
 Ziel: Keys auch im EF-Read-Pfad sichtbar machen (Schema-Vergleich vervollständigen)
 
-- [ ] Primary Key Spalten per EF lesen
-- [ ] Foreign Key Spalten per EF lesen
-- [ ] Anzeige der Tags [PK]/[FK] weiterhin identisch im Columns-UI (SQL vs. EF)
+- [x] Primary Key Spalten per EF lesen
+- [x] Foreign Key Spalten per EF lesen
+- [x] Anzeige der Tags [PK]/[FK] weiterhin identisch im Columns-UI (SQL vs. EF)
+
+#### v0.8.5 – Service-Struktur konsolidieren (Refactoring)
+Ziel: Klarere Vergleichbarkeit zwischen SQL- und EF-Pfaden vor v0.9.x
+
+- [x] Services-Ordner logisch konsolidieren (Sql / EfCore / DataAccess)
+- [x] EF RuntimeContextFactory entfernt und DbContext-Erzeugung internalisiert
+- [x] DatabaseNameRow in EfDbContext integriert
+- [x] Kleinstdateien im EF-Bereich reduziert
+- [x] Keine Verhaltensänderung (reines Refactoring)
+- [x] Architektur- und Lernziele unverändert beibehalten
+
+#### v0.8.6 – TestConnection über gerouteten DataAccess-Pfad
+Ziel: Verbindungstest bewusst zwischen SQL und EF vergleichen
+
+- [ ] Neuen Read-/Infra-UseCase einführen: TestConnection
+- [ ] TestConnection in IDataAccessService aufnehmen
+- [ ] Routing SQL / EF über DataAccessRouterService
+- [ ] SQL-Implementierung: SqlConnection.OpenAsync (bestehendes Verhalten)
+- [ ] EF-Implementierung: DbContext.Database.CanConnectAsync oder OpenConnectionAsync
+- [ ] Status-/Log-Ausgabe zeigt verwendeten Provider (SQL / EF)
+- [ ] Connect-Command nutzt den gerouteten TestConnection-Pfad
+- [ ] Vergleich: Was macht EF beim „Connect“, was nicht?
 
 ---
 

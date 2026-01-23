@@ -9,18 +9,7 @@ namespace SimpleSQLEditor.Services.EfCore
     {
         #region Fields
 
-        private readonly IEfRuntimeContextFactory _contextFactory;
-
         private const int DEFAULT_COMMAND_TIMEOUT_SECONDS = 30;
-
-        #endregion
-
-        #region Constructor
-
-        public EfDatabaseAdminService(IEfRuntimeContextFactory contextFactory)
-        {
-            _contextFactory = contextFactory;
-        }
 
         #endregion
 
@@ -29,8 +18,7 @@ namespace SimpleSQLEditor.Services.EfCore
         public async Task<IReadOnlyList<string>> GetDatabasesAsync(string connectionString)
         {
             var masterConnectionString = BuildConnectionString(connectionString);
-
-            await using var context = _contextFactory.Create(masterConnectionString);
+            await using var context = CreateContext(masterConnectionString);
 
             const string sql = @"
 SELECT [name]
@@ -53,8 +41,7 @@ WHERE [name] NOT IN ('master', 'model', 'msdb', 'tempdb')";
                 throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
 
             var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
-
-            await using var context = _contextFactory.Create(databaseConnectionString);
+            await using var context = CreateContext(databaseConnectionString);
 
             const string sql = @"
 SELECT [name]
@@ -77,8 +64,7 @@ ORDER BY [name];";
                 throw new ArgumentException("Table name must not be empty.", nameof(tableName));
 
             var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
-
-            await using var context = _contextFactory.Create(databaseConnectionString);
+            await using var context = CreateContext(databaseConnectionString);
 
             const string sql = @"
 SELECT 
@@ -133,8 +119,7 @@ ORDER BY c.column_id;";
                 throw new ArgumentException("Table name must not be empty.", nameof(tableName));
 
             var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
-
-            await using var context = _contextFactory.Create(databaseConnectionString);
+            await using var context = CreateContext(databaseConnectionString);
 
             const string sql = @"
 SELECT c.[name]
@@ -179,8 +164,7 @@ ORDER BY ic.[key_ordinal];";
                 throw new ArgumentException("Table name must not be empty.", nameof(tableName));
 
             var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
-
-            await using var context = _contextFactory.Create(databaseConnectionString);
+            await using var context = CreateContext(databaseConnectionString);
 
             const string sql = @"
 SELECT DISTINCT pc.[name]
@@ -227,8 +211,7 @@ ORDER BY pc.[name];";
                 throw new ArgumentOutOfRangeException(nameof(maxRows), "Max rows must be greater than 0.");
 
             var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
-
-            await using var context = _contextFactory.Create(databaseConnectionString);
+            await using var context = CreateContext(databaseConnectionString);
 
             var sql = $@"
 SELECT TOP (@MaxRows) *
@@ -274,6 +257,15 @@ FROM dbo.[{tableName}];";
             builder.AttachDBFilename = string.Empty;
 
             return builder.ConnectionString;
+        }
+
+        private static EfDbContext CreateContext(string connectionString)
+        {
+            var options = new DbContextOptionsBuilder<EfDbContext>()
+                .UseSqlServer(connectionString)
+                .Options;
+
+            return new EfDbContext(options);
         }
 
         private static string FormatSqlType(string typeName, short maxLength, byte precision, byte scale)
