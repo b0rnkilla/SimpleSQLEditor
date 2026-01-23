@@ -27,11 +27,11 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly IDataAccessModeService _dataAccessModeService;
 
-        private readonly IColumnDefinitionService _columnDefinitionService;
-
         private readonly IDataAccessService _dataAccessService;
 
         private readonly IOperationSourceService _operationSourceService;
+
+        private readonly IColumnDefinitionService _columnDefinitionService;
 
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
@@ -95,9 +95,9 @@ namespace SimpleSQLEditor.ViewModels
             IWindowService windowService,
             IDialogService dialogService,
             IDataAccessModeService dataAccessModeService,
-            IColumnDefinitionService columnDefinitionService,
             IDataAccessService dataAccessService,
-            IOperationSourceService operationSourceService)
+            IOperationSourceService operationSourceService
+            IColumnDefinitionService columnDefinitionService)
         {
             _sqlAdminService = sqlAdminService;
             _tableDataViewModel = tableDataViewModel;
@@ -105,9 +105,9 @@ namespace SimpleSQLEditor.ViewModels
             _windowService = windowService;
             _dialogService = dialogService;
             _dataAccessModeService = dataAccessModeService;
-            _columnDefinitionService = columnDefinitionService;
             _dataAccessService = dataAccessService;
             _operationSourceService = operationSourceService;
+            _columnDefinitionService = columnDefinitionService;
 
             ConnectionString = _configuration.GetConnectionString("SqlServer") ?? string.Empty;
 

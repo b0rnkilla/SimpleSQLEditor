@@ -121,6 +121,13 @@ Ziel: Verbindungstest bewusst zwischen SQL und EF vergleichen
 - [ ] Save / Cancel Konzepte
 - [ ] Transaktionen
 
+#### v0.9.x (irgendwann vor v1.0) –  Dokumentation im Code
+- [ ] Summaries (XML-Dokumentationskommentare) an allen relevanten Stellen
+- [ ] Kurze Kommentare (nicht „WIE“, sondern „WARUM“ und ggfs. „WAS“) an komplexeren Stellen
+
+Hinweis / Merksatz:
+"Code sagt „wie“, Kommentare sagen „warum“."
+
 ---
 
 ## 🔹 Schema / DDL (später oder optional)
