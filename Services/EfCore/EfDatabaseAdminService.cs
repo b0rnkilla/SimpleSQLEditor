@@ -124,6 +124,97 @@ ORDER BY c.column_id;";
             return result;
         }
 
+        public async Task<IReadOnlyCollection<string>> GetPrimaryKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+                throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
+
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("Table name must not be empty.", nameof(tableName));
+
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
+
+            await using var context = _contextFactory.Create(databaseConnectionString);
+
+            const string sql = @"
+SELECT c.[name]
+FROM sys.tables t
+INNER JOIN sys.schemas s ON s.[schema_id] = t.[schema_id]
+INNER JOIN sys.indexes i ON i.[object_id] = t.[object_id] AND i.[is_primary_key] = 1
+INNER JOIN sys.index_columns ic ON ic.[object_id] = i.[object_id] AND ic.[index_id] = i.[index_id]
+INNER JOIN sys.columns c ON c.[object_id] = t.[object_id] AND c.[column_id] = ic.[column_id]
+WHERE s.[name] = N'dbo'
+  AND t.[name] = @TableName
+ORDER BY ic.[key_ordinal];";
+
+            var connection = context.Database.GetDbConnection();
+            await EnsureOpenAsync(connection);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS;
+
+            var tableNameParameter = command.CreateParameter();
+            tableNameParameter.ParameterName = "@TableName";
+            tableNameParameter.Value = tableName;
+            command.Parameters.Add(tableNameParameter);
+
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add(reader.GetString(0));
+            }
+
+            return result;
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetForeignKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+                throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
+
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("Table name must not be empty.", nameof(tableName));
+
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
+
+            await using var context = _contextFactory.Create(databaseConnectionString);
+
+            const string sql = @"
+SELECT DISTINCT pc.[name]
+FROM sys.tables t
+INNER JOIN sys.schemas s ON s.[schema_id] = t.[schema_id]
+INNER JOIN sys.foreign_key_columns fkc ON fkc.[parent_object_id] = t.[object_id]
+INNER JOIN sys.columns pc ON pc.[object_id] = fkc.[parent_object_id] AND pc.[column_id] = fkc.[parent_column_id]
+WHERE s.[name] = N'dbo'
+  AND t.[name] = @TableName
+ORDER BY pc.[name];";
+
+            var connection = context.Database.GetDbConnection();
+            await EnsureOpenAsync(connection);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandTimeout = DEFAULT_COMMAND_TIMEOUT_SECONDS;
+
+            var tableNameParameter = command.CreateParameter();
+            tableNameParameter.ParameterName = "@TableName";
+            tableNameParameter.Value = tableName;
+            command.Parameters.Add(tableNameParameter);
+
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                result.Add(reader.GetString(0));
+            }
+
+            return result;
+        }
+
         public async Task<DataTable> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows)
         {
             if (string.IsNullOrWhiteSpace(databaseName))

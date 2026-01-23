@@ -62,6 +62,28 @@ namespace SimpleSQLEditor.Services.EfCore
             };
         }
 
+        public async Task<DataAccessResult<IReadOnlyCollection<string>>> GetPrimaryKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            var data = await _efDatabaseAdminService.GetPrimaryKeyColumnsAsync(connectionString, databaseName, tableName);
+
+            return new DataAccessResult<IReadOnlyCollection<string>>
+            {
+                Provider = ProviderName,
+                Data = data
+            };
+        }
+
+        public async Task<DataAccessResult<IReadOnlyCollection<string>>> GetForeignKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            var data = await _efDatabaseAdminService.GetForeignKeyColumnsAsync(connectionString, databaseName, tableName);
+
+            return new DataAccessResult<IReadOnlyCollection<string>>
+            {
+                Provider = ProviderName,
+                Data = data
+            };
+        }
+
         public async Task<DataAccessResult<DataTable>> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows)
         {
             var data = await _efDatabaseAdminService.GetTableDataAsync(connectionString, databaseName, tableName, maxRows);

@@ -364,8 +364,11 @@ namespace SimpleSQLEditor.ViewModels
                 var result = await _dataAccessService.GetColumnDataTypesAsync(ConnectionString, SelectedDatabase, SelectedTable);
                 var map = result.Data;
 
-                var pkColumns = await _sqlAdminService.GetPrimaryKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
-                var fkColumns = await _sqlAdminService.GetForeignKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
+                var pkResult = await _dataAccessService.GetPrimaryKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
+                var fkResult = await _dataAccessService.GetForeignKeyColumnsAsync(ConnectionString, SelectedDatabase, SelectedTable);
+
+                var pkColumns = pkResult.Data;
+                var fkColumns = fkResult.Data;
 
                 _columnDataTypes.Clear();
                 foreach (var kvp in map)

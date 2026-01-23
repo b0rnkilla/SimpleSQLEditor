@@ -13,6 +13,10 @@ namespace SimpleSQLEditor.Services.DataAccess
 
         Task<DataAccessResult<IReadOnlyDictionary<string, string>>> GetColumnDataTypesAsync(string connectionString, string databaseName, string tableName);
 
+        Task<DataAccessResult<IReadOnlyCollection<string>>> GetPrimaryKeyColumnsAsync(string connectionString, string databaseName, string tableName);
+
+        Task<DataAccessResult<IReadOnlyCollection<string>>> GetForeignKeyColumnsAsync(string connectionString, string databaseName, string tableName);
+
         Task<DataAccessResult<DataTable>> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows);
     }
 }

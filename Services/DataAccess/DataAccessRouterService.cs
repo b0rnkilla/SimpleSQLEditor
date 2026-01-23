@@ -55,6 +55,16 @@ namespace SimpleSQLEditor.Services.DataAccess
             return GetActiveService().GetColumnDataTypesAsync(connectionString, databaseName, tableName);
         }
 
+        public Task<DataAccessResult<IReadOnlyCollection<string>>> GetPrimaryKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            return GetActiveService().GetPrimaryKeyColumnsAsync(connectionString, databaseName, tableName);
+        }
+
+        public Task<DataAccessResult<IReadOnlyCollection<string>>> GetForeignKeyColumnsAsync(string connectionString, string databaseName, string tableName)
+        {
+            return GetActiveService().GetForeignKeyColumnsAsync(connectionString, databaseName, tableName);
+        }
+
         public Task<DataAccessResult<DataTable>> GetTableDataAsync(string connectionString, string databaseName, string tableName, int maxRows)
         {
             return GetActiveService().GetTableDataAsync(connectionString, databaseName, tableName, maxRows);
