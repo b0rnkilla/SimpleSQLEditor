@@ -45,10 +45,23 @@ EF erscheint im Log nur dort, wo EF technisch tatsächlich verwendet wird.
 #### v0.8.2 – Tabellen dynamisch mit EF lesen
 Ziel: EF ohne feste Entities verstehen
 
-- [ ] Tabellen ohne feste Entity-Klassen lesen
-- [ ] Nutzung von `FromSqlRaw` / `Database.SqlQuery`
-- [ ] Vergleich: EF vs. reines SQL
-- [ ] Beobachten des erzeugten SQL
+- [x] Tabellen ohne feste Entity-Klassen lesen
+- [x] Nutzung von Raw SQL für Tabelleninhalte
+- [x] Status-Logging für Zeilenladen inkl. Reload
+- [x] Vergleichbares Verhalten SQL vs. EF im UI
+
+#### v0.8.3 – Tabellen & Spalten dynamisch mit EF lesen
+Ziel: EF-Read-Features für Katalogdaten vervollständigen (ohne Entities)
+
+- [ ] Tabellenliste per EF lesen (sys.tables)
+- [ ] Spalten + Datentypen per EF lesen (sys.columns / sys.types)
+- [ ] Vergleich SQL vs. EF im selben UI-Flow (Mode Switch)
+
+#### v0.8.4 – PK/FK Read per EF
+Ziel: Keys auch im EF-Read-Pfad sichtbar machen
+
+- [ ] Primary Key Spalten per EF lesen
+- [ ] Foreign Key Spalten per EF lesen
 
 ---
 

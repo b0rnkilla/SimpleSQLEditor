@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimpleSQLEditor.Services;
+using SimpleSQLEditor.Infrastructure;
+using SimpleSQLEditor.Services.EfCore;
 using System.Data;
 
 namespace SimpleSQLEditor.ViewModels
@@ -10,6 +12,10 @@ namespace SimpleSQLEditor.ViewModels
         #region Fields
 
         private readonly SqlServerAdminService _sqlAdminService;
+
+        private readonly EfDatabaseAdminService _efDatabaseAdminService;
+
+        private readonly IDataAccessModeService _dataAccessModeService;
 
         #endregion
 
@@ -48,14 +54,18 @@ namespace SimpleSQLEditor.ViewModels
 
         #region Constructor
 
-        public TableDataViewModel(SqlServerAdminService sqlAdminService, string connectionString, string databaseName, string tableName, int maxRows = 100)
+        public TableDataViewModel(
+            SqlServerAdminService sqlAdminService,
+            EfDatabaseAdminService efDatabaseAdminService,
+            IDataAccessModeService dataAccessModeService)
         {
             _sqlAdminService = sqlAdminService;
+            _efDatabaseAdminService = efDatabaseAdminService;
+            _dataAccessModeService = dataAccessModeService;
 
-            _connectionString = connectionString;
-            _databaseName = databaseName;
-            _tableName = tableName;
-            _maxRows = maxRows;
+            _connectionString = string.Empty;
+            _databaseName = string.Empty;
+            _tableName = string.Empty;
 
             ReloadCommand = new AsyncRelayCommand(LoadAsync, CanReload);
         }
@@ -63,6 +73,20 @@ namespace SimpleSQLEditor.ViewModels
         #endregion
 
         #region Methods & Events
+
+        public event EventHandler? LoadingStarted;
+
+        public event EventHandler<int>? RowsLoaded;
+
+        public event EventHandler<string>? LoadingFailed;
+
+        public void Initialize(string connectionString, string databaseName, string tableName, int maxRows = 100)
+        {
+            ConnectionString = connectionString;
+            DatabaseName = databaseName;
+            TableName = tableName;
+            MaxRows = maxRows;
+        }
 
         public async Task LoadAsync()
         {
@@ -80,17 +104,24 @@ namespace SimpleSQLEditor.ViewModels
             try
             {
                 IsLoading = true;
+                LoadingStarted?.Invoke(this, EventArgs.Empty);
+
                 ErrorText = null;
                 OnPropertyChanged(nameof(HasError));
 
-                var dataTable = await _sqlAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
+                var dataTable = _dataAccessModeService.CurrentMode == DataAccessMode.Ef
+                    ? await _efDatabaseAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows)
+                    : await _sqlAdminService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
 
                 TableData = dataTable.DefaultView;
+                RowsLoaded?.Invoke(this, TableData?.Count ?? 0);
+
             }
             catch (Exception ex)
             {
                 TableData = null;
                 ErrorText = ex.Message;
+                LoadingFailed?.Invoke(this, ex.Message);
                 OnPropertyChanged(nameof(HasError));
             }
             finally

@@ -7,7 +7,7 @@ namespace SimpleSQLEditor.Services
     {
         #region Fields
 
-        private readonly IEfDatabaseQueryService _efDatabaseQueryService;
+        private readonly EfDatabaseAdminService _efDatabaseAdminService;
 
         #endregion
 
@@ -19,9 +19,9 @@ namespace SimpleSQLEditor.Services
 
         #region Constructor
 
-        public EfDatabaseCatalogService(IEfDatabaseQueryService efDatabaseQueryService)
+        public EfDatabaseCatalogService(EfDatabaseAdminService efDatabaseAdminService)
         {
-            _efDatabaseQueryService = efDatabaseQueryService;
+            _efDatabaseAdminService = efDatabaseAdminService;
         }
 
         #endregion
@@ -30,7 +30,7 @@ namespace SimpleSQLEditor.Services
 
         public async Task<DataAccessResult<IReadOnlyList<string>>> GetDatabasesAsync(string connectionString)
         {
-            var data = await _efDatabaseQueryService.GetUserDatabasesAsync(connectionString);
+            var data = await _efDatabaseAdminService.GetDatabasesAsync(connectionString);
 
             return new DataAccessResult<IReadOnlyList<string>>
             {

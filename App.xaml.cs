@@ -32,6 +32,7 @@ namespace SimpleSQLEditor
             // WPF Einstiegspunkt & Root ViewModel
             services.AddSingleton<MainWindow>();
             services.AddSingleton<ViewModels.MainViewModel>();
+            services.AddTransient<ViewModels.TableDataViewModel>();
 
             // Globaler Datenzugriffsmodus (SQL / EF)
             services.AddSingleton<IDataAccessModeService, DataAccessModeService>();
@@ -49,7 +50,8 @@ namespace SimpleSQLEditor
 
             // Entity Framework Core – Laufzeit-DbContext (Lernpfad)
             services.AddSingleton<IEfRuntimeContextFactory, EfRuntimeContextFactory>();
-            services.AddSingleton<IEfDatabaseQueryService, EfDatabaseQueryService>();
+            services.AddSingleton<EfDatabaseAdminService>();
+            //services.AddSingleton<IEfDatabaseQueryService, EfDatabaseQueryService>();
 
             // Use-Case Routing – Datenbankkatalog (SQL oder EF)
             services.AddSingleton<SqlDatabaseCatalogService>();

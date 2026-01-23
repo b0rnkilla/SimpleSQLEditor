@@ -14,6 +14,8 @@ namespace SimpleSQLEditor.ViewModels
 
         private readonly SqlServerAdminService _sqlAdminService;
 
+        private readonly TableDataViewModel _tableDataViewModel;
+
         private readonly IConfiguration _configuration;
 
         private readonly IWindowService _windowService;
@@ -31,6 +33,8 @@ namespace SimpleSQLEditor.ViewModels
         private readonly Dictionary<string, string> _columnDataTypes = new(StringComparer.OrdinalIgnoreCase);
 
         private bool _isAutoLoading;
+
+        private bool _isTableDataEventsSubscribed;
 
         private const int STATUS_STEP_DELAY_MS = 500;
 
@@ -83,6 +87,7 @@ namespace SimpleSQLEditor.ViewModels
 
         public MainViewModel(
             SqlServerAdminService sqlAdminService,
+            TableDataViewModel tableDataViewModel,
             IConfiguration configuration,
             IWindowService windowService,
             IDialogService dialogService,
@@ -92,6 +97,7 @@ namespace SimpleSQLEditor.ViewModels
             IOperationSourceService operationSourceService)
         {
             _sqlAdminService = sqlAdminService;
+            _tableDataViewModel = tableDataViewModel;
             _configuration = configuration;
             _windowService = windowService;
             _dialogService = dialogService;
@@ -493,21 +499,23 @@ namespace SimpleSQLEditor.ViewModels
 
             try
             {
-                var tableDataViewModel = new TableDataViewModel(
-                    _sqlAdminService,
+                EnsureTableDataEventSubscriptions();
+
+                _tableDataViewModel.Initialize(
                     ConnectionString,
                     SelectedDatabase,
                     SelectedTable,
                     maxRows: 100);
 
                 _windowService.ShowWindow<Views.TableDataWindow>(
-                    tableDataViewModel,
+                    _tableDataViewModel,
                     isOpen => IsTableDataOpen = isOpen);
 
-                await tableDataViewModel.LoadAsync();
+                await _tableDataViewModel.LoadAsync();
             }
             catch (Exception ex)
             {
+                using var __ = BeginTableDataOperation();
                 await SetStatusAsync(StatusLevel.Error, $"Error: {ex.Message}", withDelay: false);
             }
         }
@@ -547,6 +555,15 @@ namespace SimpleSQLEditor.ViewModels
         private IDisposable BeginSqlOperation()
         {
             return _operationSourceService.Begin("SQL");
+        }
+
+        private IDisposable BeginTableDataOperation()
+        {
+            var source = _dataAccessModeService.CurrentMode == DataAccessMode.Ef
+                ? "EF"
+                : "SQL";
+
+            return _operationSourceService.Begin(source);
         }
 
         private IDisposable BeginDatabaseCatalogOperation()
@@ -639,6 +656,32 @@ namespace SimpleSQLEditor.ViewModels
             {
                 _isAutoLoading = false;
             }
+        }
+
+        private void EnsureTableDataEventSubscriptions()
+        {
+            if (_isTableDataEventsSubscribed)
+                return;
+
+            _tableDataViewModel.LoadingStarted += async (_, _) =>
+            {
+                using var __ = BeginTableDataOperation();
+                await SetStatusAsync(StatusLevel.Info, "Loading rows...");
+            };
+
+            _tableDataViewModel.RowsLoaded += async (_, rowCount) =>
+            {
+                using var __ = BeginTableDataOperation();
+                await SetStatusAsync(StatusLevel.Info, $"Loaded {rowCount} rows.");
+            };
+
+            _tableDataViewModel.LoadingFailed += async (_, errorMessage) =>
+            {
+                using var __ = BeginTableDataOperation();
+                await SetStatusAsync(StatusLevel.Error, $"Error: {errorMessage}", withDelay: false);
+            };
+
+            _isTableDataEventsSubscribed = true;
         }
 
         private void FireAndForget(Func<Task> asyncAction)
