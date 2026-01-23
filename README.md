@@ -1,7 +1,7 @@
 ﻿# SimpleSQLEditor
 
 <p align="center">
-	<img src="docs/title_image.png" alt="SimpleSQLEditor" width="400">
+	<img src="docs/title_image.png" alt="SimpleSQLEditor">
 </p>
 
 **SimpleSQLEditor** ist ein bewusst schlank gehaltenes Lern- und Referenzprojekt zur Arbeit mit  
