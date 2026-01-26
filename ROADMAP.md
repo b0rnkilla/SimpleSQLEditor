@@ -143,18 +143,29 @@ Der Fokus liegt ausschließlich auf dem Verständnis von Tracking und State-Übe
   - Sperren der ComboBoxen (Database / Table / Column)
   - Sperren aller zugehörigen Aktionen (Load, Create, Delete, etc.)
 - [ ] Sicherstellen, dass beim Schließen von Fenstern:
-  - laufende Tracking-Sessions disposed werden
-  - keine UI-Referenzen „hängen bleiben“
-- [ ] Ziel: klarer, deterministischer Lebenszyklus (Connect → Arbeiten → Disconnect)
+  - laufende EF-Tracking-Sessions deterministisch disposed werden
+  - DbContexts zuverlässig freigegeben werden
+  - keine UI- oder Event-Referenzen „hängen bleiben“
+- [ ] Ziel:
+  - klarer, deterministischer Lebenszyklus  
+    **Connect → Arbeiten → Disconnect → garantiert sauberer Zustand**
+  - kein implizites Verlassen auf den GC
 
 #### v0.9.3 – Update einzelner Werte (EF Core)
 
 - [ ] Einzelne Spalten im Row-Details-Bereich editierbar machen
 - [ ] Änderungen über EF Core Change Tracking erkennen
 - [ ] SaveChanges bewusst und explizit auslösen
-- [ ] Cancel / Revert von Änderungen (EF State zurücksetzen)
-- [ ] Transaktionen verstehen (wann nötig, wann nicht)
-- [ ] Generiertes SQL analysieren (Update Statements, Parameter, Transaktion)
+- [ ] Cancel / Revert von Änderungen
+  - EF-Entity-State zurücksetzen
+  - kein Datenbankzugriff beim Cancel
+- [ ] Transaktionen verstehen
+  - wann EF implizit Transaktionen nutzt
+  - wann explizite Transaktionen sinnvoll / notwendig sind
+- [ ] Generiertes SQL analysieren
+  - UPDATE-Statements
+  - Parameter
+  - Transaktionsgrenzen
 
 #### v0.9.4 – Cancellation & Abbruchlogik (gezielt & bewusst)
 
@@ -162,18 +173,28 @@ Der Fokus liegt ausschließlich auf dem Verständnis von Tracking und State-Übe
   - optionales CancellationToken in DataAccess-Methoden
   - Durchreichen über Router → SQL / EF
 - [ ] Abbruch bei Disconnect
-  - laufende DB-Operationen abbrechen
-  - sauberes UI-Reset ohne Race Conditions
-- [ ] Optional: Cancel-Button bei langlaufenden Operationen (z.B. Reload TableData)
+  - laufende DB-Operationen kontrolliert abbrechen
+  - Cancel → Await → Dispose als feste Abfolge
+- [ ] Optional: Cancel-Button bei langlaufenden Operationen
+  - z.B. Reload TableData
+  - explizit *kein* Zwang für jeden Vorgang
 - [ ] Bewusster Umgang mit OperationCanceledException
-- [ ] Ziel: kontrollierbarer Abbruch statt „harter“ Dispose-Logik
+  - kein „Error“-Status
+  - normaler Abbruchpfad
+- [ ] Ziel:
+  - **kontrollierter Abbruch laufender Arbeit**
+  - Cancellation = *Abbruch-Signal*
+  - Dispose = *deterministisches Aufräumen*
+  - keine Deadlocks, keine hängenden Threads, keine Zombie-Tasks
 
 #### v0.9.x (vor v1.0) – Dokumentation im Code
 
 - [ ] XML-Summaries an allen relevanten öffentlichen Klassen & Methoden
 - [ ] Kurze, gezielte Kommentare an komplexen Stellen
   - nicht „WIE“, sondern „WARUM“ und ggf. „WAS“
-- [ ] Fokus: Nachvollziehbarkeit beim Debuggen & Lesen
+- [ ] Fokus:
+  - Nachvollziehbarkeit beim Debuggen
+  - Verständnis von EF-Interna & Lifecycle
 
 Hinweis / Merksatz:  
 > **„Code sagt *wie*, Kommentare sagen *warum*.“**
@@ -182,11 +203,16 @@ Hinweis / Merksatz:
 
 - [ ] Event-Subscriptions sauber verwalten
   - keine anonymen Lambdas ohne Abmeldung
-  - Dispose-Pattern verwenden, wo Services Events halten
+  - Dispose-Pattern bei Services & ViewModels mit Events
+- [ ] Sauberer Umgang mit Ressourcen
+  - DbContext, Connections, Reader, Tracking-Sessions
+  - keine implizite Abhängigkeit auf den Garbage Collector
 - [ ] Vermeiden von schleichenden Speicherlecks
   - Window-Lifecycle prüfen
   - ViewModel-Referenzen lösen
-- [ ] Ziel: stabiler RAM-Verbrauch über lange Laufzeit
+- [ ] Ziel:
+  - stabiler RAM-Verbrauch über lange Laufzeit
+  - reproduzierbares, deterministisches Shutdown-Verhalten
 
 ---
 
