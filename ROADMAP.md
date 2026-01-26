@@ -128,41 +128,65 @@ Hinweis:
 In dieser Version erfolgt **noch kein Schreiben in die Datenbank**.
 Der Fokus liegt ausschließlich auf dem Verständnis von Tracking und State-Übergängen.
 
-#### v0.9.2 – Update einzelner Werte (EF Core)
+#### v0.9.2 – Verbindungs- & Fenster-Lifecycle (Stabilität & UX)
 
-- [ ] Einzelne Spalten bearbeiten
-- [ ] Update über EF Core
-- [ ] SaveChanges bewusst auslösen
-- [ ] Cancel / Revert Änderungen
-- [ ] Transaktionen verstehen
-- [ ] Generiertes SQL analysieren
+- [ ] „Disconnect“-Button im MainWindow
+- [ ] Disconnect setzt den kompletten App-State zurück
+  - IsConnected = false
+  - Auswahl von Database / Table / Column zurücksetzen
+  - Buttons & ComboBoxen wieder sperren
+- [ ] Disconnect schließt alle geöffneten Nebenfenster
+  - TableDataWindow
+  - StatusLogWindow
+  - SqlDataTypesWindow
+- [ ] Während TableDataWindow geöffnet ist:
+  - Sperren der ComboBoxen (Database / Table / Column)
+  - Sperren aller zugehörigen Aktionen (Load, Create, Delete, etc.)
+- [ ] Sicherstellen, dass beim Schließen von Fenstern:
+  - laufende Tracking-Sessions disposed werden
+  - keine UI-Referenzen „hängen bleiben“
+- [ ] Ziel: klarer, deterministischer Lebenszyklus (Connect → Arbeiten → Disconnect)
 
-#### v0.9.x (irgendwann vor v1.0) –  Dokumentation im Code
-- [ ] Summaries (XML-Dokumentationskommentare) an allen relevanten Stellen
-- [ ] Kurze Kommentare (nicht „WIE“, sondern „WARUM“ und ggfs. „WAS“) an komplexeren Stellen
+#### v0.9.3 – Update einzelner Werte (EF Core)
 
-Hinweis / Merksatz:
-"Code sagt „wie“, Kommentare sagen „warum“."
+- [ ] Einzelne Spalten im Row-Details-Bereich editierbar machen
+- [ ] Änderungen über EF Core Change Tracking erkennen
+- [ ] SaveChanges bewusst und explizit auslösen
+- [ ] Cancel / Revert von Änderungen (EF State zurücksetzen)
+- [ ] Transaktionen verstehen (wann nötig, wann nicht)
+- [ ] Generiertes SQL analysieren (Update Statements, Parameter, Transaktion)
 
-#### v0.9.x (irgendwann vor v1.0) – Verschiedenes
-- [ ] Generelles Refactoring
-- [ ] Cancellation-Tokens einsetzen (prüfen wo sinnvoll, z.B. lange DB-Operationen)
-- [ ] Vermeiden: Event-Methode festschreiben und bei Dispose abmelden, Siehe:
-```
-_columnDefinitionService.DataTypeInsertRequested += async (_, dataType) =>
-{
-    var updated = ApplyDataTypeToColumnDefinition(SelectedColumn, dataType);
+#### v0.9.4 – Cancellation & Abbruchlogik (gezielt & bewusst)
 
-    if (string.IsNullOrWhiteSpace(updated))
-    {
-        await SetStatusAsync(StatusLevel.Warning, "Enter a column name first.");
-        return;
-    }
+- [ ] CancellationToken-Basis einführen
+  - optionales CancellationToken in DataAccess-Methoden
+  - Durchreichen über Router → SQL / EF
+- [ ] Abbruch bei Disconnect
+  - laufende DB-Operationen abbrechen
+  - sauberes UI-Reset ohne Race Conditions
+- [ ] Optional: Cancel-Button bei langlaufenden Operationen (z.B. Reload TableData)
+- [ ] Bewusster Umgang mit OperationCanceledException
+- [ ] Ziel: kontrollierbarer Abbruch statt „harter“ Dispose-Logik
 
-    SelectedColumn = updated;
-};
-```
---> Dispose Pattern benutzen
+#### v0.9.x (vor v1.0) – Dokumentation im Code
+
+- [ ] XML-Summaries an allen relevanten öffentlichen Klassen & Methoden
+- [ ] Kurze, gezielte Kommentare an komplexen Stellen
+  - nicht „WIE“, sondern „WARUM“ und ggf. „WAS“
+- [ ] Fokus: Nachvollziehbarkeit beim Debuggen & Lesen
+
+Hinweis / Merksatz:  
+> **„Code sagt *wie*, Kommentare sagen *warum*.“**
+
+#### v0.9.x (vor v1.0) – Refactoring & Speicherhygiene
+
+- [ ] Event-Subscriptions sauber verwalten
+  - keine anonymen Lambdas ohne Abmeldung
+  - Dispose-Pattern verwenden, wo Services Events halten
+- [ ] Vermeiden von schleichenden Speicherlecks
+  - Window-Lifecycle prüfen
+  - ViewModel-Referenzen lösen
+- [ ] Ziel: stabiler RAM-Verbrauch über lange Laufzeit
 
 ---
 
