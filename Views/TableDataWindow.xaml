@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor.Views"
         mc:Ignorable="d"
-        Title="TableDataWindow" Height="750" Width="1250">
+        Title="TableDataWindow"
+        Height="600" Width="1025"
+        MinHeight="500" MinWidth="975">
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -37,6 +39,14 @@
                 <Run Text="{Binding TableName}" />
             </TextBlock>
 
+            <TextBlock DockPanel.Dock="Left"
+                       Text="{Binding HeaderStatusText}"
+                       VerticalAlignment="Center"
+                       Margin="25,0,0,0"
+                       TextWrapping="Wrap"
+                       FontStyle="Italic"
+                       MaxWidth="420" />
+
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                 <TextBlock Text="Max rows:"
                            FontWeight="SemiBold"
@@ -52,19 +62,15 @@
                         Width="80"
                         Margin="0,0,8,0"/>
 
-                <TextBlock Text="Loading..."
-                           VerticalAlignment="Center">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <Button Content="Simulate Change"
+                        Command="{Binding SimulateChangeCommand}"
+                        Width="110"
+                        Margin="0,0,8,0" />
+
+                <Button Content="Revert"
+                        Command="{Binding RevertChangeCommand}"
+                        Width="80"
+                        Margin="0,0,8,0" />
             </StackPanel>
         </DockPanel>
         <!-- #endregion -->

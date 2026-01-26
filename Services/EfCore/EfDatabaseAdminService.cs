@@ -1,7 +1,10 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Data;
 using System.Data.Common;
+using System.Text.RegularExpressions;
 
 namespace SimpleSQLEditor.Services.EfCore
 {
@@ -249,6 +252,56 @@ FROM dbo.[{tableName}];";
             return table;
         }
 
+        public async Task<EfRowTrackingSession> StartRowTrackingAsync(
+            string connectionString, string databaseName, string tableName,
+            string primaryKeyColumn, object primaryKeyValue, DataTable rowDataTable)
+        {
+            if (string.IsNullOrWhiteSpace(databaseName))
+                throw new ArgumentException("Database name must not be empty.", nameof(databaseName));
+
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("Table name must not be empty.", nameof(tableName));
+
+            if (string.IsNullOrWhiteSpace(primaryKeyColumn))
+                throw new ArgumentException("Primary key column must not be empty.", nameof(primaryKeyColumn));
+
+            var databaseConnectionString = BuildConnectionString(connectionString, databaseName);
+
+            var columnTypes = rowDataTable.Columns
+                .Cast<DataColumn>()
+                .ToDictionary(c => c.ColumnName, c => c.DataType, StringComparer.OrdinalIgnoreCase);
+
+            var descriptor = new TrackingModelDescriptor
+            {
+                EntityName = BuildSafeEntityName(databaseName, tableName),
+                TableName = tableName,
+                PrimaryKeyColumn = primaryKeyColumn,
+                ColumnTypes = columnTypes
+            };
+
+            var options = new DbContextOptionsBuilder<EfDbContext>()
+                .UseSqlServer(databaseConnectionString)
+                .ReplaceService<IModelCacheKeyFactory, TrackingModelCacheKeyFactory>()
+                .Options;
+
+            var context = new EfDbContext(options, descriptor);
+
+            var set = context.Set<Dictionary<string, object>>(descriptor.EntityName);
+
+            if (descriptor.ColumnTypes.TryGetValue(primaryKeyColumn, out var pkType) && primaryKeyValue is not null)
+                primaryKeyValue = Convert.ChangeType(primaryKeyValue, pkType);
+
+            var entity = await set.FindAsync(primaryKeyValue);
+
+            if (entity is null)
+            {
+                context.Dispose();
+                throw new InvalidOperationException("Selected row could not be loaded as tracked entity.");
+            }
+
+            return new EfRowTrackingSession(context, entity);
+        }
+
         private static async Task EnsureOpenAsync(DbConnection connection)
         {
             if (connection.State == ConnectionState.Open)
@@ -307,6 +360,112 @@ FROM dbo.[{tableName}];";
             }
 
             return typeName;
+        }
+
+        private static string BuildSafeEntityName(string databaseName, string tableName)
+        {
+            static string Sanitize(string value)
+            {
+                return Regex.Replace(value, @"[^A-Za-z0-9_]", "_");
+            }
+
+            return $"TrackedRow_{Sanitize(databaseName)}_{Sanitize(tableName)}";
+        }
+
+        #endregion
+
+        #region Nested Classes
+
+        public sealed class EfTrackingSnapshot
+        {
+            public required string State { get; init; }
+
+            public required IReadOnlyList<string> ModifiedColumns { get; init; }
+        }
+
+        public sealed class EfRowTrackingSession : IDisposable
+        {
+            #region Fields
+
+            private readonly EfDbContext _context;
+
+            private readonly Dictionary<string, object> _entity;
+
+            #endregion
+
+            #region Constructor
+
+            internal EfRowTrackingSession(EfDbContext context, Dictionary<string, object> entity)
+            {
+                _context = context;
+                _entity = entity;
+            }
+
+            #endregion
+
+            #region Methods & Events
+
+            public EfTrackingSnapshot GetSnapshot()
+            {
+                EntityEntry entry = _context.Entry(_entity);
+
+                var modified = entry.Properties
+                    .Where(p => p.IsModified)
+                    .Select(p => p.Metadata.Name)
+                    .ToList();
+
+                return new EfTrackingSnapshot
+                {
+                    State = entry.State.ToString(),
+                    ModifiedColumns = modified
+                };
+            }
+
+            public void SetValue(string columnName, object? value)
+            {
+                if (string.IsNullOrWhiteSpace(columnName))
+                    throw new ArgumentException("Column name must not be empty.", nameof(columnName));
+
+                if (!_entity.ContainsKey(columnName))
+                    throw new ArgumentException("Column does not exist in tracked entity.", nameof(columnName));
+
+                _entity[columnName] = value ?? DBNull.Value;
+
+                var entry = _context.Entry(_entity);
+                entry.Property(columnName).IsModified = true;
+            }
+
+            public void RevertChanges()
+            {
+                var entry = _context.Entry(_entity);
+
+                entry.CurrentValues.SetValues(entry.OriginalValues);
+
+                foreach (var property in entry.Properties)
+                {
+                    property.IsModified = false;
+                }
+
+                entry.State = EntityState.Unchanged;
+            }
+
+            public void Dispose()
+            {
+                _context.Dispose();
+            }
+
+            #endregion
+        }
+
+        private sealed class TrackingModelCacheKeyFactory : IModelCacheKeyFactory
+        {
+            public object Create(DbContext context, bool designTime)
+            {
+                if (context is EfDbContext efContext && efContext.TrackingCacheKey is not null)
+                    return (context.GetType(), efContext.TrackingCacheKey, designTime);
+
+                return (context.GetType(), designTime);
+            }
         }
 
         #endregion

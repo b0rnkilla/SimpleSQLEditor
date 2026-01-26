@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor.Views"
         mc:Ignorable="d"
-        Title="Status Log" Height="400" Width="500">
+        Title="Status Log"
+        Height="400" Width="500"
+        MinHeight="300" MinWidth="300">
     
     <Grid Margin="5">
         

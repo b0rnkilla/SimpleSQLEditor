@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimpleSQLEditor.Services.DataAccess;
+using SimpleSQLEditor.Services.EfCore;
 using System.Collections.ObjectModel;
 using System.Data;
 
@@ -13,6 +14,16 @@ namespace SimpleSQLEditor.ViewModels
         private readonly IDataAccessService _dataAccessService;
 
         private readonly HashSet<string> _primaryKeyColumns = new(StringComparer.OrdinalIgnoreCase);
+
+        private readonly EfDatabaseAdminService _efDatabaseAdminService;
+
+        private EfDatabaseAdminService.EfRowTrackingSession? _trackingSession;
+
+        private const string DEFAULT_TRACKING_DEMO_COLUMN = "Id";
+
+        private const int HEADER_STATUS_DELAY_MS = 500;
+
+        private int _headerStatusSequence;
 
         #endregion
 
@@ -34,6 +45,9 @@ namespace SimpleSQLEditor.ViewModels
         private DataView? _tableData;
 
         [ObservableProperty]
+        private string _headerStatusText = string.Empty;
+
+        [ObservableProperty]
         private bool _isLoading;
 
         [ObservableProperty]
@@ -48,25 +62,44 @@ namespace SimpleSQLEditor.ViewModels
 
         public bool HasSelectedRow => SelectedRow is not null;
 
+        [ObservableProperty]
+        private bool _hasPrimaryKey;
+
+        [ObservableProperty]
+        private string _trackingAvailabilityText = string.Empty;
+
+        [ObservableProperty]
+        private string _efTrackingStateText = string.Empty;
+
+        public bool CanRunTrackingDemo => _trackingSession is not null;
+
         #endregion
 
         #region Commands
 
         public IAsyncRelayCommand ReloadCommand { get; }
 
+        public IRelayCommand SimulateChangeCommand { get; }
+
+        public IRelayCommand RevertChangeCommand { get; }
+
         #endregion
 
         #region Constructor
 
-        public TableDataViewModel(IDataAccessService dataAccessService)
+        public TableDataViewModel(IDataAccessService dataAccessService, EfDatabaseAdminService efDatabaseAdminService)
         {
             _dataAccessService = dataAccessService;
+            _efDatabaseAdminService = efDatabaseAdminService;
 
             _connectionString = string.Empty;
             _databaseName = string.Empty;
             _tableName = string.Empty;
 
             ReloadCommand = new AsyncRelayCommand(LoadAsync, CanReload);
+
+            SimulateChangeCommand = new RelayCommand(SimulateChange, () => CanRunTrackingDemo);
+            RevertChangeCommand = new RelayCommand(RevertChange, () => CanRunTrackingDemo);
         }
 
         #endregion
@@ -102,9 +135,14 @@ namespace SimpleSQLEditor.ViewModels
                 return;
             }
 
+            ResetTracking();
+
+            var loadingStartedAt = DateTime.UtcNow;
+
             try
             {
                 IsLoading = true;
+                HeaderStatusText = "Loading...";
                 LoadingStarted?.Invoke(this, EventArgs.Empty);
 
                 ErrorText = null;
@@ -124,6 +162,17 @@ namespace SimpleSQLEditor.ViewModels
                 await LoadPrimaryKeyColumnsAsync();
                 UpdateRowDetails(SelectedRow);
 
+                var elapsedMs = (int)(DateTime.UtcNow - loadingStartedAt).TotalMilliseconds;
+                var remainingMs = HEADER_STATUS_DELAY_MS - elapsedMs;
+
+                if (remainingMs > 0)
+                    await Task.Delay(remainingMs);
+
+                if (_dataAccessService.ProviderName.Equals("EF", StringComparison.OrdinalIgnoreCase))
+                    HeaderStatusText = TrackingAvailabilityText;
+                else
+                    HeaderStatusText = string.Empty;
+
                 RowsLoaded?.Invoke(this, TableData?.Count ?? 0);
             }
             catch (Exception ex)
@@ -131,7 +180,10 @@ namespace SimpleSQLEditor.ViewModels
                 TableData = null;
                 SelectedRow = null;
                 UpdateRowDetails(null);
+
                 ErrorText = ex.Message;
+                ResetTracking();
+
                 LoadingFailed?.Invoke(this, ex.Message);
                 OnPropertyChanged(nameof(HasError));
             }
@@ -156,6 +208,70 @@ namespace SimpleSQLEditor.ViewModels
         {
             OnPropertyChanged(nameof(HasSelectedRow));
             UpdateRowDetails(value);
+
+            _ = TryStartEfTrackingAsync(value);
+
+            OnPropertyChanged(nameof(CanRunTrackingDemo));
+        }
+
+        private async Task TryStartEfTrackingAsync(DataRowView? row)
+        {
+            ResetTracking();
+
+            if (row is null)
+                return;
+
+            if (!_dataAccessService.ProviderName.Equals("EF", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            if (!HasPrimaryKey)
+                return;
+
+            if (_primaryKeyColumns.Count != 1)
+                return;
+
+            var pkColumn = _primaryKeyColumns.First();
+
+            if (!row.Row.Table.Columns.Contains(pkColumn))
+                return;
+
+            var pkValue = row.Row[pkColumn];
+            if (pkValue == DBNull.Value)
+                return;
+
+            try
+            {
+                _trackingSession = await _efDatabaseAdminService.StartRowTrackingAsync(
+                    ConnectionString,
+                    DatabaseName,
+                    TableName,
+                    pkColumn,
+                    pkValue,
+                    row.Row.Table);
+
+                var snapshot = _trackingSession.GetSnapshot();
+
+                EfTrackingStateText = $"EF Tracking State: {snapshot.State}";
+
+                OnPropertyChanged(nameof(CanRunTrackingDemo));
+                SimulateChangeCommand.NotifyCanExecuteChanged();
+                RevertChangeCommand.NotifyCanExecuteChanged();
+
+                var messages = new List<string>();
+
+                if (!string.IsNullOrWhiteSpace(TrackingAvailabilityText))
+                    messages.Add(TrackingAvailabilityText);
+
+                if (!string.IsNullOrWhiteSpace(EfTrackingStateText))
+                    messages.Add(EfTrackingStateText);
+
+                await SetHeaderStatusSequenceAsync(EfTrackingStateText);
+            }
+            catch (Exception ex)
+            {
+                ErrorText = ex.Message;
+                OnPropertyChanged(nameof(HasError));
+            }
         }
 
         private void UpdateRowDetails(DataRowView? row)
@@ -190,6 +306,9 @@ namespace SimpleSQLEditor.ViewModels
         {
             _primaryKeyColumns.Clear();
 
+            HasPrimaryKey = false;
+            TrackingAvailabilityText = string.Empty;
+
             if (string.IsNullOrWhiteSpace(ConnectionString) ||
                 string.IsNullOrWhiteSpace(DatabaseName) ||
                 string.IsNullOrWhiteSpace(TableName))
@@ -201,6 +320,138 @@ namespace SimpleSQLEditor.ViewModels
             {
                 _primaryKeyColumns.Add(columnName);
             }
+
+            HasPrimaryKey = _primaryKeyColumns.Count > 0;
+
+            if (!HasPrimaryKey)
+            {
+                TrackingAvailabilityText = "Kein Primary Key gefunden. EF-Tracking-Demo ist für diese Tabelle deaktiviert.";
+                return;
+            }
+
+            if (_primaryKeyColumns.Count > 1)
+            {
+                TrackingAvailabilityText = "Composite Primary Key erkannt. EF-Tracking-Demo wird später bewusst separat behandelt.";
+                return;
+            }
+
+            TrackingAvailabilityText = "Primary Key erkannt. EF-Tracking-Demo ist für diese Tabelle möglich.";
+        }
+
+        private void ResetTracking()
+        {
+            _trackingSession?.Dispose();
+            _trackingSession = null;
+            EfTrackingStateText = string.Empty;
+
+            OnPropertyChanged(nameof(CanRunTrackingDemo));
+            SimulateChangeCommand.NotifyCanExecuteChanged();
+            RevertChangeCommand.NotifyCanExecuteChanged();
+
+            if (!_dataAccessService.ProviderName.Equals("EF", StringComparison.OrdinalIgnoreCase))
+                HeaderStatusText = string.Empty;
+            else
+                HeaderStatusText = TrackingAvailabilityText;
+        }
+
+        private async Task SetHeaderStatusSequenceAsync(params string[] messages)
+        {
+            var sequenceId = Interlocked.Increment(ref _headerStatusSequence);
+
+            foreach (var message in messages)
+            {
+                if (sequenceId != _headerStatusSequence)
+                    return;
+
+                HeaderStatusText = message;
+
+                if (string.IsNullOrWhiteSpace(message))
+                    continue;
+
+                await Task.Delay(HEADER_STATUS_DELAY_MS);
+            }
+        }
+
+        private void SimulateChange()
+        {
+            if (_trackingSession is null || SelectedRow is null)
+                return;
+
+            var columnName = GetDemoColumnName();
+            if (string.IsNullOrWhiteSpace(columnName))
+                return;
+
+            var currentValue = SelectedRow.Row.Table.Columns.Contains(columnName)
+                ? SelectedRow.Row[columnName]
+                : null;
+
+            var newValue = BuildDemoValue(currentValue);
+
+            _trackingSession.SetValue(columnName, newValue);
+
+            var snapshot = _trackingSession.GetSnapshot();
+
+            EfTrackingStateText = BuildTrackingStateText(snapshot);
+            HeaderStatusText = EfTrackingStateText;
+        }
+
+        private void RevertChange()
+        {
+            if (_trackingSession is null)
+                return;
+
+            _trackingSession.RevertChanges();
+
+            var snapshot = _trackingSession.GetSnapshot();
+
+            EfTrackingStateText = BuildTrackingStateText(snapshot);
+            HeaderStatusText = EfTrackingStateText;
+        }
+
+        private string GetDemoColumnName()
+        {
+            if (SelectedRow is null)
+                return string.Empty;
+
+            var columns = SelectedRow.Row.Table.Columns.Cast<DataColumn>().ToList();
+
+            var pkColumn = _primaryKeyColumns.Count == 1
+                ? _primaryKeyColumns.First()
+                : null;
+
+            var candidate = columns
+                .Select(c => c.ColumnName)
+                .FirstOrDefault(name => !string.Equals(name, pkColumn, StringComparison.OrdinalIgnoreCase));
+
+            return candidate ?? pkColumn ?? string.Empty;
+        }
+
+        private static object BuildDemoValue(object? currentValue)
+        {
+            if (currentValue is null || currentValue == DBNull.Value)
+                return "DemoValue";
+
+            if (currentValue is int i)
+                return i + 1;
+
+            if (currentValue is long l)
+                return l + 1;
+
+            if (currentValue is string s)
+                return $"{s}_demo";
+
+            if (currentValue is DateTime dt)
+                return dt.AddSeconds(1);
+
+            return "DemoValue";
+        }
+
+        private static string BuildTrackingStateText(EfDatabaseAdminService.EfTrackingSnapshot snapshot)
+        {
+            if (snapshot.ModifiedColumns.Count == 0)
+                return $"EF Tracking State: {snapshot.State}";
+
+            return $"EF Tracking State: {snapshot.State} (Modified: {string.Join(", ", snapshot.ModifiedColumns)})";
         }
 
         #endregion

@@ -5,7 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor.Views"
         mc:Ignorable="d"
-        Title="SQL Data Types" Height="675" Width="250">
+        Title="SQL Data Types"
+        Height="675" Width="250"
+        MinHeight="200" MinWidth="175"
+        MaxHeight="675" MaxWidth="275"
+        ResizeMode="CanResize">
 
     <Grid Margin="5">
         <Grid.RowDefinitions>

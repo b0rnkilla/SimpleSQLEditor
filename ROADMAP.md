@@ -116,13 +116,13 @@ Ziel: Verbindungstest bewusst zwischen SQL und EF vergleichen
 
 Ziel: Verstehen, wie EF Core Daten verfolgt, bevor Änderungen geschrieben werden
 
-- [ ] Vergleich: SQL DataTable vs. EF-tracked Daten
-- [ ] Laden einer Zeile über EF mit Tracking
-- [ ] ChangeTracker States analysieren (Unchanged / Modified)
-- [ ] Änderungen im UI vornehmen, ohne zu speichern
-- [ ] Sichtbar-machen, wann EF Änderungen erkennt
-- [ ] Anzeige des Tracking-Zustands im Status- oder Debug-Kontext
-- [ ] Abgrenzung: UI-State vs. EF-State
+- [x] Vergleich: SQL DataTable vs. EF-tracked Daten (UI zeigt DataTable; EF-Tracking läuft separat über tracked Session)
+- [x] Laden einer Zeile über EF mit Tracking (dynamisches Tracking per SharedTypeEntity ohne Entities)
+- [x] ChangeTracker States analysieren (Unchanged / Modified) (Header-Ausgabe + Demo-Buttons)
+- [x] Änderungen im UI vornehmen, ohne zu speichern (Demo: Simulate Change / Revert ohne SaveChanges)
+- [x] Sichtbar-machen, wann EF Änderungen erkennt (Header: Modified + Modified Columns)
+- [x] Anzeige des Tracking-Zustands im Header des TableDataWindows sichtbar machen
+- [x] Abgrenzung: UI-State vs. EF-State (UI bleibt read-only; EF-State separat sichtbar)
 
 Hinweis:
 In dieser Version erfolgt **noch kein Schreiben in die Datenbank**.
@@ -143,6 +143,26 @@ Der Fokus liegt ausschließlich auf dem Verständnis von Tracking und State-Übe
 
 Hinweis / Merksatz:
 "Code sagt „wie“, Kommentare sagen „warum“."
+
+#### v0.9.x (irgendwann vor v1.0) – Verschiedenes
+- [ ] Generelles Refactoring
+- [ ] Cancellation-Tokens einsetzen (prüfen wo sinnvoll, z.B. lange DB-Operationen)
+- [ ] Vermeiden: Event-Methode festschreiben und bei Dispose abmelden, Siehe:
+```
+_columnDefinitionService.DataTypeInsertRequested += async (_, dataType) =>
+{
+    var updated = ApplyDataTypeToColumnDefinition(SelectedColumn, dataType);
+
+    if (string.IsNullOrWhiteSpace(updated))
+    {
+        await SetStatusAsync(StatusLevel.Warning, "Enter a column name first.");
+        return;
+    }
+
+    SelectedColumn = updated;
+};
+```
+--> Dispose Pattern benutzen
 
 ---
 
