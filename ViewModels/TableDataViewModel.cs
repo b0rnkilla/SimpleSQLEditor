@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SimpleSQLEditor.Services;
-using SimpleSQLEditor.Infrastructure;
 using SimpleSQLEditor.Services.DataAccess;
+using System.Collections.ObjectModel;
 using System.Data;
 
 namespace SimpleSQLEditor.ViewModels
@@ -12,6 +11,8 @@ namespace SimpleSQLEditor.ViewModels
         #region Fields
 
         private readonly IDataAccessService _dataAccessService;
+
+        private readonly HashSet<string> _primaryKeyColumns = new(StringComparer.OrdinalIgnoreCase);
 
         #endregion
 
@@ -39,6 +40,13 @@ namespace SimpleSQLEditor.ViewModels
         private string? _errorText;
 
         public bool HasError => !string.IsNullOrWhiteSpace(ErrorText);
+
+        [ObservableProperty]
+        private DataRowView? _selectedRow;
+
+        public ObservableCollection<RowDetailItem> RowDetails { get; } = new();
+
+        public bool HasSelectedRow => SelectedRow is not null;
 
         #endregion
 
@@ -87,6 +95,8 @@ namespace SimpleSQLEditor.ViewModels
             if (MaxRows <= 0)
             {
                 TableData = null;
+                SelectedRow = null;
+                UpdateRowDetails(null);
                 ErrorText = "Max rows must be greater than 0.";
                 OnPropertyChanged(nameof(HasError));
                 return;
@@ -100,15 +110,27 @@ namespace SimpleSQLEditor.ViewModels
                 ErrorText = null;
                 OnPropertyChanged(nameof(HasError));
 
+                SelectedRow = null;
+                UpdateRowDetails(null);
+                OnPropertyChanged(nameof(HasSelectedRow));
+
                 var result = await _dataAccessService.GetTableDataAsync(ConnectionString, DatabaseName, TableName, MaxRows);
 
                 TableData = result.Data.DefaultView;
-                RowsLoaded?.Invoke(this, TableData?.Count ?? 0);
 
+                SelectedRow = null;
+                UpdateRowDetails(null);
+
+                await LoadPrimaryKeyColumnsAsync();
+                UpdateRowDetails(SelectedRow);
+
+                RowsLoaded?.Invoke(this, TableData?.Count ?? 0);
             }
             catch (Exception ex)
             {
                 TableData = null;
+                SelectedRow = null;
+                UpdateRowDetails(null);
                 ErrorText = ex.Message;
                 LoadingFailed?.Invoke(this, ex.Message);
                 OnPropertyChanged(nameof(HasError));
@@ -130,6 +152,66 @@ namespace SimpleSQLEditor.ViewModels
             ReloadCommand.NotifyCanExecuteChanged();
         }
 
+        partial void OnSelectedRowChanged(DataRowView? value)
+        {
+            OnPropertyChanged(nameof(HasSelectedRow));
+            UpdateRowDetails(value);
+        }
+
+        private void UpdateRowDetails(DataRowView? row)
+        {
+            RowDetails.Clear();
+
+            if (row is null)
+                return;
+
+            foreach (DataColumn column in row.Row.Table.Columns)
+            {
+                var rawValue = row.Row[column];
+                var displayValue = rawValue == DBNull.Value ? "NULL" : rawValue?.ToString();
+
+                var columnName = column.ColumnName;
+                var isPrimaryKey = _primaryKeyColumns.Contains(columnName);
+
+                var displayColumnName = isPrimaryKey
+                    ? $"{columnName} [PK]"
+                    : columnName;
+
+                RowDetails.Add(new RowDetailItem
+                {
+                    ColumnName = displayColumnName,
+                    DisplayValue = displayValue,
+                    IsPrimaryKey = isPrimaryKey
+                });
+            }
+        }
+
+        private async Task LoadPrimaryKeyColumnsAsync()
+        {
+            _primaryKeyColumns.Clear();
+
+            if (string.IsNullOrWhiteSpace(ConnectionString) ||
+                string.IsNullOrWhiteSpace(DatabaseName) ||
+                string.IsNullOrWhiteSpace(TableName))
+                return;
+
+            var result = await _dataAccessService.GetPrimaryKeyColumnsAsync(ConnectionString, DatabaseName, TableName);
+
+            foreach (var columnName in result.Data)
+            {
+                _primaryKeyColumns.Add(columnName);
+            }
+        }
+
         #endregion
+    }
+
+    public sealed class RowDetailItem
+    {
+        public required string ColumnName { get; init; }
+
+        public string? DisplayValue { get; init; }
+
+        public bool IsPrimaryKey { get; init; }
     }
 }

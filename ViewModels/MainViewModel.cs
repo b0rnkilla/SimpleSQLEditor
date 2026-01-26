@@ -96,7 +96,7 @@ namespace SimpleSQLEditor.ViewModels
             IDialogService dialogService,
             IDataAccessModeService dataAccessModeService,
             IDataAccessService dataAccessService,
-            IOperationSourceService operationSourceService
+            IOperationSourceService operationSourceService,
             IColumnDefinitionService columnDefinitionService)
         {
             _sqlAdminService = sqlAdminService;

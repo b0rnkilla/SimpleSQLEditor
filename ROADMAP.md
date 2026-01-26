@@ -106,20 +106,36 @@ Ziel: Verbindungstest bewusst zwischen SQL und EF vergleichen
 ### v0.9.x – Daten bearbeiten (EF Core)
 
 #### v0.9.0 – Row Selection
-- [ ] Zeilen im DataGrid auswählen
-- [ ] Primary Key erkennen
-- [ ] Anzeige der Row-Details
+- [x] Zeilen im DataGrid auswählen
+- [x] Primary Key erkennen (geroutet: SQL / EF)
+- [x] Anzeige der Row-Details
+- [x] PK visuell hervorgehoben
+- [x] UI Skalierbar bei vielen Spalten (GridSplitter + ScrollViewer)
 
-#### v0.9.1 – Update einzelner Werte
+#### v0.9.1 – EF Change Tracking verstehen (Read → Track)
+
+Ziel: Verstehen, wie EF Core Daten verfolgt, bevor Änderungen geschrieben werden
+
+- [ ] Vergleich: SQL DataTable vs. EF-tracked Daten
+- [ ] Laden einer Zeile über EF mit Tracking
+- [ ] ChangeTracker States analysieren (Unchanged / Modified)
+- [ ] Änderungen im UI vornehmen, ohne zu speichern
+- [ ] Sichtbar-machen, wann EF Änderungen erkennt
+- [ ] Anzeige des Tracking-Zustands im Status- oder Debug-Kontext
+- [ ] Abgrenzung: UI-State vs. EF-State
+
+Hinweis:
+In dieser Version erfolgt **noch kein Schreiben in die Datenbank**.
+Der Fokus liegt ausschließlich auf dem Verständnis von Tracking und State-Übergängen.
+
+#### v0.9.2 – Update einzelner Werte (EF Core)
+
 - [ ] Einzelne Spalten bearbeiten
 - [ ] Update über EF Core
-- [ ] Validierung & Fehlerhandling
-
-#### v0.9.2 – Change Tracking verstehen
-- [ ] Modified / Added / Deleted States
-- [ ] Wann EF SQL erzeugt
-- [ ] Save / Cancel Konzepte
-- [ ] Transaktionen
+- [ ] SaveChanges bewusst auslösen
+- [ ] Cancel / Revert Änderungen
+- [ ] Transaktionen verstehen
+- [ ] Generiertes SQL analysieren
 
 #### v0.9.x (irgendwann vor v1.0) –  Dokumentation im Code
 - [ ] Summaries (XML-Dokumentationskommentare) an allen relevanten Stellen

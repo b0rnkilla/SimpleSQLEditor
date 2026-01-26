@@ -5,13 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleSQLEditor.Views"
         mc:Ignorable="d"
-        Title="TableDataWindow" Height="500" Width="900">
+        Title="TableDataWindow" Height="750" Width="1250">
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>                          <!-- Header -->
+            <RowDefinition Height="Auto"/>                          <!-- Error -->
+            <RowDefinition Height="*"           
+                           MinHeight="180"/>                        <!-- Data Grid -->
+            <RowDefinition Height="Auto"/>                          <!-- Grid Splitter -->
+            <RowDefinition x:Name="RowDetailsRow" MinHeight="35">  <!-- Row Details -->
+                <RowDefinition.Style>
+                    <Style TargetType="RowDefinition">
+                        <Setter Property="Height" Value="Auto"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding HasSelectedRow}" Value="True">
+                                <Setter Property="Height" Value="*"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </RowDefinition.Style>
+            </RowDefinition>
+            
         </Grid.RowDefinitions>
 
         <!-- #region Header -->
@@ -76,9 +91,10 @@
         </Border>
         <!-- #endregion -->
 
-        <!-- #region Data -->
+        <!-- #region Data Grid -->
         <DataGrid Grid.Row="2"
                   ItemsSource="{Binding TableData}"
+                  SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
                   AutoGenerateColumns="True"
                   IsReadOnly="True">
             <DataGrid.Style>
@@ -93,6 +109,64 @@
             </DataGrid.Style>
         </DataGrid>
         <!-- #endregion -->
-        
+
+        <!-- #region Grid Splitter -->
+        <GridSplitter Grid.Row="3"
+                      Margin="0,6,0,0"
+                      Height="5"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Center"
+                      ResizeDirection="Rows"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="True" />
+        <!-- #endregion -->
+
+        <!-- #region Row Details -->
+        <GroupBox Grid.Row="4"
+                  Margin="0,8,0,0">
+            <GroupBox.Header>
+                <TextBlock Text="Row Details:"
+                           FontWeight="Bold"
+                           Margin="1,0,1,2" />
+            </GroupBox.Header>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding RowDetails}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="300"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding ColumnName}"
+                                           VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="FontWeight" Value="Normal"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPrimaryKey}" Value="True">
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding DisplayValue}"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </GroupBox>
+        <!-- #endregion -->
+
     </Grid>
 </Window>
