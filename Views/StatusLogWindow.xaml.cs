@@ -4,7 +4,7 @@ using System.Windows.Threading;
 
 namespace SimpleSQLEditor.Views
 {
-    public partial class StatusLogWindow : Window
+    public partial class StatusLogWindow : HandyControl.Controls.Window
     {
         #region Fields
 
