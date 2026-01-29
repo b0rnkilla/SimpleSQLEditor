@@ -9,7 +9,7 @@
         <hc:ThemeResources UsingSystemTheme="True" />
         <hc:Theme />
 
-
+        <ResourceDictionary Source="/Styles/GeralStyles.xaml" />
         <ResourceDictionary Source="/Styles/ButtonStyles.xaml" />
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>

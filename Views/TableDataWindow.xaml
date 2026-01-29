@@ -131,10 +131,15 @@
     <DataGrid
       Grid.Row="2"
       AutoGenerateColumns="True"
+      Background="{DynamicResource RegionBrush}"
+      CellStyle="{StaticResource CustomDataGridCellStyle}"
+      GridLinesVisibility="Vertical"
       HeadersVisibility="Column"
       IsReadOnly="True"
       ItemsSource="{Binding TableData}"
-      SelectedItem="{Binding SelectedRow, Mode=TwoWay}">
+      RowStyle="{StaticResource CustomDataGridRowStyle}"
+      SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+      VerticalGridLinesBrush="{DynamicResource RegionBrush}">
       <DataGrid.Style>
         <Style BasedOn="{StaticResource DataGrid.Small}" TargetType="DataGrid">
           <Setter Property="IsEnabled" Value="True" />
