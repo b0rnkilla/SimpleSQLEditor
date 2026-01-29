@@ -2,7 +2,7 @@
 
 namespace SimpleSQLEditor.Views
 {
-    public partial class SqlDataTypesWindow : Window
+    public partial class SqlDataTypesWindow : HandyControl.Controls.Window
     {
         #region Constructor
 
