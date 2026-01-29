@@ -72,18 +72,22 @@
           Text="Max rows:" />
 
         <TextBox
-          Width="40"
+          Width="50"
           Margin="0,0,12,0"
+          HorizontalContentAlignment="Center"
           Text="{Binding MaxRows, UpdateSourceTrigger=PropertyChanged}" />
 
         <Button
           Width="80"
           Margin="0,0,8,0"
-          Command="{Binding ReloadCommand}"
-          Content="↻ Reload" />
+          Command="{Binding ReloadCommand}">
+          <hc:UniformSpacingPanel Spacing="5">
+            <icon:PackIconPhosphorIcons Kind="ArrowClockwise" />
+            <TextBlock Text="Realod" />
+          </hc:UniformSpacingPanel>
+        </Button>
 
         <Button
-          Width="110"
           Margin="0,0,8,0"
           Command="{Binding SimulateChangeCommand}"
           Content="Simulate Change" />
@@ -127,11 +131,12 @@
     <DataGrid
       Grid.Row="2"
       AutoGenerateColumns="True"
+      HeadersVisibility="Column"
       IsReadOnly="True"
       ItemsSource="{Binding TableData}"
       SelectedItem="{Binding SelectedRow, Mode=TwoWay}">
       <DataGrid.Style>
-        <Style TargetType="DataGrid">
+        <Style BasedOn="{StaticResource DataGrid.Small}" TargetType="DataGrid">
           <Setter Property="IsEnabled" Value="True" />
           <Style.Triggers>
             <DataTrigger Binding="{Binding IsLoading}" Value="True">
@@ -146,8 +151,8 @@
     <!--#region Grid Splitter-->
     <GridSplitter
       Grid.Row="3"
-      Height="5"
-      Margin="0,6,0,0"
+      Height="2"
+      Margin="-10,6,-10,0"
       HorizontalAlignment="Stretch"
       VerticalAlignment="Center"
       ResizeBehavior="PreviousAndNext"
@@ -156,7 +161,10 @@
     <!--#endregion-->
 
     <!--#region Row Details-->
-    <GroupBox Grid.Row="4" Margin="0,8,0,0">
+    <GroupBox
+      Grid.Row="4"
+      Margin="0,8,0,0"
+      Style="{StaticResource GroupBoxOriginal}">
       <GroupBox.Header>
         <TextBlock
           Margin="1,0,1,2"
