@@ -36,6 +36,7 @@
     <!--#region ListBox showing available Data Types-->
     <ListBox
       Grid.Row="1"
+      ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
       ItemsSource="{Binding AllowedDataTypes}"
       ScrollViewer.HorizontalScrollBarVisibility="Auto"
       ScrollViewer.VerticalScrollBarVisibility="Auto"

@@ -20,6 +20,7 @@
     <!--#region ListBox showing log entries-->
     <ListBox
       x:Name="LogListBox"
+      ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
       ItemsSource="{Binding StatusHistory}"
       ScrollViewer.CanContentScroll="False"
       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -38,15 +39,15 @@
 
                 <Style.Triggers>
                   <DataTrigger Binding="{Binding Level}" Value="Warning">
-                    <Setter Property="Foreground" Value="Goldenrod" />
+                    <Setter Property="Foreground" Value="{DynamicResource WarningBrush}" />
                   </DataTrigger>
 
                   <DataTrigger Binding="{Binding Level}" Value="Success">
-                    <Setter Property="Foreground" Value="Green" />
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
                   </DataTrigger>
 
                   <DataTrigger Binding="{Binding Level}" Value="Error">
-                    <Setter Property="Foreground" Value="Red" />
+                    <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
                   </DataTrigger>
                 </Style.Triggers>
               </Style>
