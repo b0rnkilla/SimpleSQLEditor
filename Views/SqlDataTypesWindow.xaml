@@ -16,6 +16,7 @@
   MaxHeight="675"
   ResizeMode="CanResize"
   Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
   mc:Ignorable="d">
 
   <Grid Margin="5">
@@ -36,6 +37,7 @@
     <!--#region ListBox showing available Data Types-->
     <ListBox
       Grid.Row="1"
+      Background="{DynamicResource DarkMaskBrush}"
       ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
       ItemsSource="{Binding AllowedDataTypes}"
       ScrollViewer.HorizontalScrollBarVisibility="Auto"

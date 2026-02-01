@@ -13,6 +13,7 @@
   MinWidth="300"
   MinHeight="300"
   Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
   mc:Ignorable="d">
 
   <Grid Margin="5">
@@ -20,6 +21,7 @@
     <!--#region ListBox showing log entries-->
     <ListBox
       x:Name="LogListBox"
+      Background="{StaticResource DarkMaskBrush}"
       ItemContainerStyle="{StaticResource CustomListBoxItemStyle}"
       ItemsSource="{Binding StatusHistory}"
       ScrollViewer.CanContentScroll="False"

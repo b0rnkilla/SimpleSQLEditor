@@ -12,6 +12,8 @@
   Width="950"
   Height="310"
   ResizeMode="NoResize"
+  Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
   mc:Ignorable="d">
 
   <hc:Window.Resources>
