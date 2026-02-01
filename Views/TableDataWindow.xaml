@@ -13,6 +13,7 @@
   MinWidth="975"
   MinHeight="500"
   Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
   mc:Ignorable="d">
 
   <Grid Margin="10">
@@ -131,7 +132,7 @@
     <DataGrid
       Grid.Row="2"
       AutoGenerateColumns="True"
-      Background="{DynamicResource RegionBrush}"
+      Background="{DynamicResource DarkMaskBrush}"
       CellStyle="{StaticResource CustomDataGridCellStyle}"
       GridLinesVisibility="Vertical"
       HeadersVisibility="Column"
