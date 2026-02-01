@@ -1,304 +1,407 @@
-﻿<Window x:Class="SimpleSQLEditor.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimpleSQLEditor"
-        xmlns:infra="clr-namespace:SimpleSQLEditor.Infrastructure"
-        mc:Ignorable="d"
-        Title="Simple SQL Editor" Height="275" Width="950"
-        ResizeMode="NoResize">
+﻿<hc:Window
+  x:Class="SimpleSQLEditor.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:hc="https://handyorg.github.io/handycontrol"
+  xmlns:icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
+  xmlns:infra="clr-namespace:SimpleSQLEditor.Infrastructure"
+  xmlns:local="clr-namespace:SimpleSQLEditor"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Title="Simple SQL Editor"
+  Width="950"
+  Height="310"
+  ResizeMode="NoResize"
+  Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
+  mc:Ignorable="d">
 
-    <Window.Resources>
-        <infra:EnumEqualsConverter x:Key="EnumEqualsConverter" />
-    </Window.Resources>
+  <hc:Window.Resources>
+    <infra:EnumEqualsConverter x:Key="EnumEqualsConverter" />
+  </hc:Window.Resources>
 
-    <Grid Margin="12,5,12,12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+  <Grid Margin="12,5,12,12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
 
-        <!-- #region Status -->
-        <GroupBox Margin="0,0,0,8">
-            <GroupBox.Header>
-                <TextBlock Text="Status:"
-                           FontWeight="Bold"
-                           Margin="1,0,1,2" />
-            </GroupBox.Header>
+    <!--#region Status-->
+    <GroupBox Margin="0,0,0,8" Style="{StaticResource GroupBoxOriginal}">
+      <GroupBox.Header>
+        <TextBlock FontWeight="Bold" Text="Status:" />
+      </GroupBox.Header>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0"
-                         Text="{Binding StatusText}"
-                         IsReadOnly="True">
+        <TextBox
+          Grid.Column="0"
+          IsReadOnly="True"
+          Text="{Binding StatusText}">
 
-                    <TextBox.Style>
-                        <Style TargetType="TextBox">
-                            <Setter Property="FontWeight" Value="Normal"/>
-                            <Setter Property="Foreground" Value="Black"/>
+          <TextBox.Style>
+            <Style BasedOn="{StaticResource TextBoxBaseStyle}" TargetType="TextBox">
+              <Setter Property="FontWeight" Value="Normal" />
 
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding StatusLevel}" Value="Warning">
-                                    <Setter Property="Foreground" Value="Goldenrod"/>
-                                </DataTrigger>
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding StatusLevel}" Value="Warning">
+                  <Setter Property="Foreground" Value="Goldenrod" />
+                </DataTrigger>
 
-                                <DataTrigger Binding="{Binding StatusLevel}" Value="Success">
-                                    <Setter Property="Foreground" Value="Green"/>
-                                </DataTrigger>
+                <DataTrigger Binding="{Binding StatusLevel}" Value="Success">
+                  <Setter Property="Foreground" Value="Green" />
+                </DataTrigger>
 
-                                <DataTrigger Binding="{Binding StatusLevel}" Value="Error">
-                                    <Setter Property="Foreground" Value="Red"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBox.Style>
-                </TextBox>
+                <DataTrigger Binding="{Binding StatusLevel}" Value="Error">
+                  <Setter Property="Foreground" Value="Red" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBox.Style>
+        </TextBox>
 
-                <Button Grid.Column="1"
-                        Content="🗖  Status-Log"
-                        Width="110"
-                        Margin="8,0,0,0"
-                        Command="{Binding OpenStatusLogCommand}">
-                    <Button.Style>
-                        <Style TargetType="Button">
-                            <Setter Property="IsEnabled" Value="True"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsStatusLogOpen}" Value="True">
-                                    <Setter Property="IsEnabled" Value="False"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
-            </Grid>
+        <Button
+          Grid.Column="1"
+          Width="106"
+          Margin="8,0,0,0"
+          Command="{Binding OpenStatusLogCommand}">
+          <hc:UniformSpacingPanel Spacing="5">
+            <icon:PackIconPhosphorIcons Kind="AppWindow" />
+            <TextBlock Text="Status-Log" />
+          </hc:UniformSpacingPanel>
+          <Button.Style>
+            <Style BasedOn="{StaticResource ButtonDefault}" TargetType="Button">
+              <Setter Property="IsEnabled" Value="True" />
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding IsStatusLogOpen}" Value="True">
+                  <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+        </Button>
+      </Grid>
+    </GroupBox>
+    <!--#endregion-->
+
+    <Grid Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <!--#region Data Access Mode & Connection String-->
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--#region Data Access Mode-->
+        <GroupBox
+          Grid.Column="0"
+          Margin="0,0,8,8"
+          Style="{StaticResource GroupBoxOriginal}">
+          <GroupBox.Header>
+            <TextBlock FontWeight="Bold" Text="Data Access Mode:" />
+          </GroupBox.Header>
+
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <RadioButton
+              Grid.Column="0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Content="SQL"
+              IsChecked="{Binding SelectedDataAccessMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Sql}" />
+
+            <RadioButton
+              Grid.Column="1"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Content="EF"
+              IsChecked="{Binding SelectedDataAccessMode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Ef}" />
+          </Grid>
         </GroupBox>
-        <!-- #endregion -->
+        <!--#endregion-->
 
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <!--#region Connection String-->
+        <GroupBox
+          Grid.Column="1"
+          Margin="0,0,0,8"
+          Style="{StaticResource GroupBoxOriginal}">
+          <GroupBox.Header>
+            <TextBlock FontWeight="Bold" Text="Connection String:" />
+          </GroupBox.Header>
 
-            <!-- #region Data Access Mode & Connection String -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+          <Grid Margin="0,6,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                <!-- #region Data Access Mode -->
-                <GroupBox Grid.Column="0" Margin="0,0,8,8">
-                    <GroupBox.Header>
-                        <TextBlock Text="Data Access Mode:"
-                                   FontWeight="Bold"
-                                   Margin="1,0,1,2" />
-                    </GroupBox.Header>
+            <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
 
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+            <Button
+              Grid.Column="1"
+              Width="106"
+              Margin="8,0,0,0"
+              Command="{Binding ConnectCommand}">
+              <hc:UniformSpacingPanel Spacing="5">
+                <icon:PackIconPhosphorIcons Kind="Play" />
+                <TextBlock Text="Connect" />
+              </hc:UniformSpacingPanel>
+            </Button>
+          </Grid>
+        </GroupBox>
+        <!--#endregion-->
 
-                        <RadioButton Grid.Column="0"
-                                     VerticalAlignment="Center"
-                                     HorizontalAlignment="Center"
-                                     Content="SQL"
-                                     IsChecked="{Binding SelectedDataAccessMode,
-                                     Converter={StaticResource EnumEqualsConverter},
-                                     ConverterParameter=Sql}" />
+      </Grid>
+      <!--#endregion-->
 
-                        <RadioButton Grid.Column="1"
-                                     VerticalAlignment="Center"
-                                     HorizontalAlignment="Center"
-                                     Content="EF"
-                                     IsChecked="{Binding SelectedDataAccessMode,
-                                     Converter={StaticResource EnumEqualsConverter},
-                                     ConverterParameter=Ef}" />
-                    </Grid>
-                </GroupBox>
-                <!-- #endregion -->
+      <!--#region DB / Tables / Columns-->
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-                <!-- #region Connection String -->
-                <GroupBox Grid.Column="1" Margin="0,0,0,8">
-                    <GroupBox.Header>
-                        <TextBlock Text="Connection String:"
-                                   FontWeight="Bold"
-                                   Margin="1,0,1,2" />
-                    </GroupBox.Header>
+        <!--#region Databases-->
+        <GroupBox
+          Width="300"
+          Margin="0,0,8,0"
+          Style="{StaticResource GroupBoxOriginal}">
+          <GroupBox.Header>
+            <TextBlock FontWeight="Bold" Text="Database:" />
+          </GroupBox.Header>
 
-                    <Grid Margin="0,6,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
+          <StackPanel>
+            <ComboBox
+              IsEditable="True"
+              ItemsSource="{Binding Databases}"
+              Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <TextBox Text="{Binding ConnectionString, UpdateSourceTrigger=PropertyChanged}" />
+            <StackPanel
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Orientation="Horizontal">
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding LoadDatabasesCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="ArrowClockwise" />
+                  <TextBlock Text="Refresh" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding CreateDatabaseCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Plus" />
+                  <TextBlock Text="Create" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Command="{Binding DeleteDatabaseCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Minus" />
+                  <TextBlock Text="Delete" />
+                </hc:UniformSpacingPanel>
+              </Button>
+            </StackPanel>
+          </StackPanel>
+        </GroupBox>
+        <!--  endregion  -->
 
-                        <Button Grid.Column="1"
-                                Margin="8,0,0,0"
-                                Width="110"
-                                Content="⏵ Connect"
-                                Command="{Binding ConnectCommand}" />
-                    </Grid>
-                </GroupBox>
-                <!-- #endregion -->
+        <!--#region Tables-->
+        <GroupBox
+          Grid.Column="1"
+          Width="300"
+          Margin="0,0,8,0"
+          Style="{StaticResource GroupBoxOriginal}">
+          <GroupBox.Header>
+            <TextBlock FontWeight="Bold" Text="Table:" />
+          </GroupBox.Header>
 
-            </Grid>
-            <!-- #endregion -->
+          <StackPanel>
+            <ComboBox
+              IsEditable="True"
+              ItemsSource="{Binding Tables}"
+              Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}" />
 
-            <!-- #region DB / Tables / Columns -->
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Orientation="Horizontal">
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding LoadTablesCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="ArrowClockwise" />
+                  <TextBlock Text="Refresh" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding CreateTableCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Plus" />
+                  <TextBlock Text="Create" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Command="{Binding DeleteTableCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Minus" />
+                  <TextBlock Text="Delete" />
+                </hc:UniformSpacingPanel>
+              </Button>
+            </StackPanel>
 
-                <!-- #region Databases -->
-                <GroupBox Margin="0,0,8,0">
-                    <GroupBox.Header>
-                        <TextBlock Text="Database:"
-                                   FontWeight="Bold"
-                                   Margin="1,0,1,2" />
-                    </GroupBox.Header>
+            <Button
+              Margin="0,6,0,0"
+              HorizontalAlignment="Stretch"
+              Command="{Binding OpenTableDataCommand}"
+              IsEnabled="{Binding IsConnected}">
+              <hc:UniformSpacingPanel Spacing="5">
+                <icon:PackIconPhosphorIcons Kind="Table" />
+                <TextBlock Text="Show Data" />
+              </hc:UniformSpacingPanel>
+              <Button.Style>
+                <Style BasedOn="{StaticResource ButtonDefault}" TargetType="Button">
+                  <Setter Property="IsEnabled" Value="True" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsTableDataOpen}" Value="True">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsConnected}" Value="False">
+                      <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+          </StackPanel>
+        </GroupBox>
+        <!--#endregion-->
 
-                    <StackPanel>
-                        <ComboBox IsEditable="True"
-                                  ItemsSource="{Binding Databases}"
-                                  Text="{Binding SelectedDatabase, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="3" />
+        <!--#region Columns-->
+        <GroupBox
+          Grid.Column="2"
+          Width="300"
+          Style="{StaticResource GroupBoxOriginal}">
+          <GroupBox.Header>
+            <TextBlock FontWeight="Bold" Text="Column:" />
+          </GroupBox.Header>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="↻ Refresh"
-                                    Command="{Binding LoadDatabasesCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="+ Create"
-                                    Command="{Binding CreateDatabaseCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90"
-                                    Content="− Delete"
-                                    Command="{Binding DeleteDatabaseCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-                <!-- endregion -->
+          <StackPanel>
+            <ComboBox
+              IsEditable="True"
+              ItemsSource="{Binding Columns}"
+              Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}" />
 
-                <!-- #region Tables -->
-                <GroupBox Grid.Column="1" Margin="0,0,8,0">
-                    <GroupBox.Header>
-                        <TextBlock Text="Table:"
-                                   FontWeight="Bold"
-                                   Margin="1,0,1,2" />
-                    </GroupBox.Header>
+            <StackPanel
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Orientation="Horizontal">
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding LoadColumnsCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="ArrowClockwise" />
+                  <TextBlock Text="Refresh" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding CreateColumnCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Plus" />
+                  <TextBlock Text="Create" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button
+                Width="96"
+                Command="{Binding DeleteColumnCommand}"
+                IsEnabled="{Binding IsConnected}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Minus" />
+                  <TextBlock Text="Delete" />
+                </hc:UniformSpacingPanel>
+              </Button>
+            </StackPanel>
 
-                    <StackPanel>
-                        <ComboBox IsEditable="True"
-                                  ItemsSource="{Binding Tables}"
-                                  Text="{Binding SelectedTable, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="3" />
+            <StackPanel
+              Margin="0,6,0,0"
+              HorizontalAlignment="Center"
+              Orientation="Horizontal">
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                Command="{Binding OpenSqlDataTypesCommand}">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="TextItalic" />
+                  <TextBlock Text="DataTypes" />
+                </hc:UniformSpacingPanel>
+                <Button.Style>
+                  <Style BasedOn="{StaticResource ButtonDefault}" TargetType="Button">
+                    <Setter Property="IsEnabled" Value="True" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding IsSqlDataTypesOpen}" Value="True">
+                        <Setter Property="IsEnabled" Value="False" />
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Button.Style>
+              </Button>
+              <Button
+                Width="96"
+                Margin="0,0,6,0"
+                IsEnabled="False">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Plus" />
+                  <TextBlock Text="Add PK" />
+                </hc:UniformSpacingPanel>
+              </Button>
+              <Button Width="96" IsEnabled="False">
+                <hc:UniformSpacingPanel Spacing="5">
+                  <icon:PackIconPhosphorIcons Kind="Plus" />
+                  <TextBlock Text="Add FK" />
+                </hc:UniformSpacingPanel>
+              </Button>
+            </StackPanel>
+          </StackPanel>
+        </GroupBox>
+        <!--#endregion-->
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="↻ Refresh"
-                                    Command="{Binding LoadTablesCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="+ Create"
-                                    Command="{Binding CreateTableCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90"
-                                    Content="− Delete"
-                                    Command="{Binding DeleteTableCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                        </StackPanel>
+      </Grid>
+      <!--#endregion-->
 
-                        <Button Margin="3,6,3,0"
-                                Content="▦ Show Data"
-                                Command="{Binding OpenTableDataCommand}"
-                                IsEnabled="{Binding IsConnected}" >
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="IsEnabled" Value="True"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsTableDataOpen}" Value="True">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsConnected}" Value="False">
-                                            <Setter Property="IsEnabled" Value="False"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                    </StackPanel>
-                </GroupBox>
-                <!-- #endregion -->
-
-                <!-- #region Columns -->
-                <GroupBox Grid.Column="2">
-                    <GroupBox.Header>
-                        <TextBlock Text="Column:"
-                                   FontWeight="Bold"
-                                   Margin="1,0,1,2" />
-                    </GroupBox.Header>
-
-                    <StackPanel>
-                        <ComboBox IsEditable="True"
-                                  ItemsSource="{Binding Columns}"
-                                  Text="{Binding SelectedColumn, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="3" />
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="↻ Refresh"
-                                    Command="{Binding LoadColumnsCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90" Margin="0,0,6,0"
-                                    Content="+ Create"
-                                    Command="{Binding CreateColumnCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                            <Button Width="90"
-                                    Content="− Delete"
-                                    Command="{Binding DeleteColumnCommand}"
-                                    IsEnabled="{Binding IsConnected}" />
-                        </StackPanel>
-
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,6,0,0">
-                            <Button Width="90"
-                                    Margin="0,0,6,0"
-                                    Content="𝑇 DataTypes"
-                                    Command="{Binding OpenSqlDataTypesCommand}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="IsEnabled" Value="True"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsSqlDataTypesOpen}" Value="True">
-                                                <Setter Property="IsEnabled" Value="False"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-                            <Button Width="90" Margin="0,0,6,0" Content="+ Add PK" IsEnabled="False"/>
-                            <Button Width="90" Content="+ Add FK" IsEnabled="False"/>
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-                <!-- #endregion -->
-
-            </Grid>
-            <!-- #endregion -->
-
-        </Grid>
     </Grid>
-</Window>
+  </Grid>
+</hc:Window>

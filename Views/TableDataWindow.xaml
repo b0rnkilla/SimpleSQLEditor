@@ -1,178 +1,221 @@
-﻿<Window x:Class="SimpleSQLEditor.Views.TableDataWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimpleSQLEditor.Views"
-        mc:Ignorable="d"
-        Title="Data Table"
-        Height="600" Width="1025"
-        MinHeight="500" MinWidth="975">
+﻿<hc:Window
+  x:Class="SimpleSQLEditor.Views.TableDataWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:hc="https://handyorg.github.io/handycontrol"
+  xmlns:icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
+  xmlns:local="clr-namespace:SimpleSQLEditor.Views"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Title="Data Table"
+  Width="1025"
+  Height="600"
+  MinWidth="975"
+  MinHeight="500"
+  Style="{StaticResource WindowWin10}"
+  SystemBackdropType="Mica"
+  mc:Ignorable="d">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>                          <!-- Header -->
-            <RowDefinition Height="Auto"/>                          <!-- Error -->
-            <RowDefinition Height="*"           
-                           MinHeight="180"/>                        <!-- Data Grid -->
-            <RowDefinition Height="Auto"/>                          <!-- Grid Splitter -->
-            <RowDefinition x:Name="RowDetailsRow" MinHeight="35">  <!-- Row Details -->
-                <RowDefinition.Style>
-                    <Style TargetType="RowDefinition">
-                        <Setter Property="Height" Value="Auto"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding HasSelectedRow}" Value="True">
-                                <Setter Property="Height" Value="*"/>
-                            </DataTrigger>
-                        </Style.Triggers>
+  <Grid Margin="10">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <!--  Header  -->
+      <RowDefinition Height="Auto" />
+      <!--  Error  -->
+      <RowDefinition Height="*" MinHeight="180" />
+      <!--  Data Grid  -->
+      <RowDefinition Height="Auto" />
+      <!--  Grid Splitter  -->
+      <RowDefinition x:Name="RowDetailsRow" MinHeight="35">
+        <!--  Row Details  -->
+        <RowDefinition.Style>
+          <Style TargetType="RowDefinition">
+            <Setter Property="Height" Value="Auto" />
+            <Style.Triggers>
+              <DataTrigger Binding="{Binding HasSelectedRow}" Value="True">
+                <Setter Property="Height" Value="*" />
+              </DataTrigger>
+            </Style.Triggers>
+          </Style>
+        </RowDefinition.Style>
+      </RowDefinition>
+
+    </Grid.RowDefinitions>
+
+    <!--#region Header-->
+    <DockPanel
+      Grid.Row="0"
+      Margin="0,0,0,8"
+      LastChildFill="False">
+      <TextBlock
+        VerticalAlignment="Center"
+        DockPanel.Dock="Left"
+        FontWeight="Bold">
+        <Run Text="{Binding DatabaseName}" />
+        <Run Text="." />
+        <Run Text="{Binding TableName}" />
+      </TextBlock>
+
+      <TextBlock
+        MaxWidth="420"
+        Margin="25,0,0,0"
+        VerticalAlignment="Center"
+        DockPanel.Dock="Left"
+        FontStyle="Italic"
+        Text="{Binding HeaderStatusText}"
+        TextWrapping="Wrap" />
+
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+        <TextBlock
+          Margin="0,0,6,0"
+          VerticalAlignment="Center"
+          FontWeight="SemiBold"
+          Text="Max rows:" />
+
+        <TextBox
+          Width="50"
+          Margin="0,0,12,0"
+          HorizontalContentAlignment="Center"
+          Text="{Binding MaxRows, UpdateSourceTrigger=PropertyChanged}" />
+
+        <Button
+          Width="80"
+          Margin="0,0,8,0"
+          Command="{Binding ReloadCommand}">
+          <hc:UniformSpacingPanel Spacing="5">
+            <icon:PackIconPhosphorIcons Kind="ArrowClockwise" />
+            <TextBlock Text="Realod" />
+          </hc:UniformSpacingPanel>
+        </Button>
+
+        <Button
+          Margin="0,0,8,0"
+          Command="{Binding SimulateChangeCommand}"
+          Content="Simulate Change" />
+
+        <Button
+          Width="80"
+          Margin="0,0,8,0"
+          Command="{Binding RevertChangeCommand}"
+          Content="Revert" />
+      </StackPanel>
+    </DockPanel>
+    <!--#endregion-->
+
+    <!--#region Error-->
+    <Border
+      Grid.Row="1"
+      Margin="0,0,0,8"
+      Padding="3"
+      Background="#22FF0000"
+      BorderBrush="#66FF0000"
+      BorderThickness="1">
+      <Border.Style>
+        <Style TargetType="Border">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding HasError}" Value="True">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Border.Style>
+
+      <TextBlock
+        FontWeight="SemiBold"
+        Text="{Binding ErrorText}"
+        TextWrapping="Wrap" />
+    </Border>
+    <!--#endregion-->
+
+    <!--#region Data Grid-->
+    <DataGrid
+      Grid.Row="2"
+      AutoGenerateColumns="True"
+      Background="{DynamicResource DarkMaskBrush}"
+      CellStyle="{StaticResource CustomDataGridCellStyle}"
+      GridLinesVisibility="Vertical"
+      HeadersVisibility="Column"
+      IsReadOnly="True"
+      ItemsSource="{Binding TableData}"
+      RowStyle="{StaticResource CustomDataGridRowStyle}"
+      SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
+      VerticalGridLinesBrush="{DynamicResource RegionBrush}">
+      <DataGrid.Style>
+        <Style BasedOn="{StaticResource DataGrid.Small}" TargetType="DataGrid">
+          <Setter Property="IsEnabled" Value="True" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding IsLoading}" Value="True">
+              <Setter Property="IsEnabled" Value="False" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </DataGrid.Style>
+    </DataGrid>
+    <!--#endregion-->
+
+    <!--#region Grid Splitter-->
+    <GridSplitter
+      Grid.Row="3"
+      Height="2"
+      Margin="-10,6,-10,0"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Center"
+      ResizeBehavior="PreviousAndNext"
+      ResizeDirection="Rows"
+      ShowsPreview="True" />
+    <!--#endregion-->
+
+    <!--#region Row Details-->
+    <GroupBox
+      Grid.Row="4"
+      Margin="0,8,0,0"
+      Style="{StaticResource GroupBoxOriginal}">
+      <GroupBox.Header>
+        <TextBlock
+          Margin="1,0,1,2"
+          FontWeight="Bold"
+          Text="Row Details:" />
+      </GroupBox.Header>
+
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding RowDetails}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="300" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock
+                  Grid.Column="0"
+                  VerticalAlignment="Center"
+                  Text="{Binding ColumnName}">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="FontWeight" Value="Normal" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsPrimaryKey}" Value="True">
+                          <Setter Property="FontWeight" Value="SemiBold" />
+                        </DataTrigger>
+                      </Style.Triggers>
                     </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-            
-        </Grid.RowDefinitions>
+                  </TextBlock.Style>
+                </TextBlock>
 
-        <!-- #region Header -->
-        <DockPanel Grid.Row="0" LastChildFill="False" Margin="0,0,0,8">
-            <TextBlock FontWeight="Bold" DockPanel.Dock="Left" VerticalAlignment="Center">
-                <Run Text="{Binding DatabaseName}" />
-                <Run Text="." />
-                <Run Text="{Binding TableName}" />
-            </TextBlock>
+                <TextBlock
+                  Grid.Column="1"
+                  VerticalAlignment="Center"
+                  Text="{Binding DisplayValue}"
+                  TextWrapping="Wrap" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </GroupBox>
+    <!--#endregion-->
 
-            <TextBlock DockPanel.Dock="Left"
-                       Text="{Binding HeaderStatusText}"
-                       VerticalAlignment="Center"
-                       Margin="25,0,0,0"
-                       TextWrapping="Wrap"
-                       FontStyle="Italic"
-                       MaxWidth="420" />
-
-            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                <TextBlock Text="Max rows:"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"
-                           Margin="0,0,6,0"/>
-
-                <TextBox Width="40"
-                         Text="{Binding MaxRows, UpdateSourceTrigger=PropertyChanged}"
-                         Margin="0,0,12,0"/>
-
-                <Button Content="↻ Reload"
-                        Command="{Binding ReloadCommand}"
-                        Width="80"
-                        Margin="0,0,8,0"/>
-
-                <Button Content="Simulate Change"
-                        Command="{Binding SimulateChangeCommand}"
-                        Width="110"
-                        Margin="0,0,8,0" />
-
-                <Button Content="Revert"
-                        Command="{Binding RevertChangeCommand}"
-                        Width="80"
-                        Margin="0,0,8,0" />
-            </StackPanel>
-        </DockPanel>
-        <!-- #endregion -->
-
-        <!-- #region Error -->
-        <Border Grid.Row="1"
-                Background="#22FF0000"
-                BorderBrush="#66FF0000"
-                BorderThickness="1"
-                Padding="3"
-                Margin="0,0,0,8">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding HasError}" Value="True">
-                            <Setter Property="Visibility" Value="Visible"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
-
-            <TextBlock Text="{Binding ErrorText}" FontWeight="SemiBold" TextWrapping="Wrap"/>
-        </Border>
-        <!-- #endregion -->
-
-        <!-- #region Data Grid -->
-        <DataGrid Grid.Row="2"
-                  ItemsSource="{Binding TableData}"
-                  SelectedItem="{Binding SelectedRow, Mode=TwoWay}"
-                  AutoGenerateColumns="True"
-                  IsReadOnly="True">
-            <DataGrid.Style>
-                <Style TargetType="DataGrid">
-                    <Setter Property="IsEnabled" Value="True"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </DataGrid.Style>
-        </DataGrid>
-        <!-- #endregion -->
-
-        <!-- #region Grid Splitter -->
-        <GridSplitter Grid.Row="3"
-                      Margin="0,6,0,0"
-                      Height="5"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Center"
-                      ResizeDirection="Rows"
-                      ResizeBehavior="PreviousAndNext"
-                      ShowsPreview="True" />
-        <!-- #endregion -->
-
-        <!-- #region Row Details -->
-        <GroupBox Grid.Row="4"
-                  Margin="0,8,0,0">
-            <GroupBox.Header>
-                <TextBlock Text="Row Details:"
-                           FontWeight="Bold"
-                           Margin="1,0,1,2" />
-            </GroupBox.Header>
-
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding RowDetails}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="300"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <TextBlock Grid.Column="0"
-                                           Text="{Binding ColumnName}"
-                                           VerticalAlignment="Center">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="FontWeight" Value="Normal"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsPrimaryKey}" Value="True">
-                                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-
-                                <TextBlock Grid.Column="1"
-                                           Text="{Binding DisplayValue}"
-                                           TextWrapping="Wrap"
-                                           VerticalAlignment="Center" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </GroupBox>
-        <!-- #endregion -->
-
-    </Grid>
-</Window>
+  </Grid>
+</hc:Window>
